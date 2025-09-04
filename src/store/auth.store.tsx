@@ -7,17 +7,21 @@ import { authRepository } from "@/core/auth/infrastructure/auth.repository";
 
 interface AuthState {
   isLoading: boolean;
+  user: any;
   error: string | null;
+  verifyError: string | null;
   login: (email: string, password: string) => Promise<any>;
   register: (data: any) => Promise<any>;
   logout: () => Promise<void>;
   verify: () => Promise<any>;
+
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   isLoading: false,
   error: null,
-
+  user: null,
+  verifyError: null,
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
@@ -26,12 +30,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (result?.data?.token) {
         sessionStorage.setItem("token", result.data.token);
       }
-      set({ isLoading: false });
+      set({ isLoading: false, user: result.data });
       return result;
     } catch (err: any) {
       set({
         isLoading: false,
-        error: err.message || "Error al iniciar sesión",
+        error: err.response.data.message || "Error al iniciar sesión",
       });
       throw err;
     }
@@ -55,10 +59,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const verify = verifyUseCase(authRepository);
       const result = await verify();
-      set({ isLoading: false });
+      set({ isLoading: false, verifyError: null, user: result.data });
       return result;
     } catch (err: any) {
-      set({ isLoading: false, error: err.message || "Error al verificar" });
+      set({ isLoading: false, verifyError: err.message || "Error al verificar" });
       throw err;
     }
   },
@@ -67,7 +71,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       sessionStorage.removeItem("token");
-      set({ isLoading: false });
+      set({ isLoading: false, user: null });
     } catch (err: any) {
       set({ isLoading: false, error: err.message || "Error al cerrar sesión" });
       throw err;
