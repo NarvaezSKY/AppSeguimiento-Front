@@ -28,7 +28,7 @@ export const useTasksStore = create<TasksState>((set) => ({
         try {
             const createComponent = uploadComponentUseCase(tasksRepository);
             const result = await createComponent(data);
-            set({ isLoading: false });
+            set({ isLoading: false, error: null });
             return result;
         } catch (err: any) {
             set({

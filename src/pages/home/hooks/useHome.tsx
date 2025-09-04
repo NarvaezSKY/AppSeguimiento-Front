@@ -1,9 +1,10 @@
 import { useCallback, useEffect } from "react";
-import { IEvidence } from "@/core/tasks/domain/upload-evidence";
 import { useTasksStore } from "@/store/tasks.store";
+import { toast } from "sonner";
+import { IComponents } from "@/core/tasks/domain/get-components/get-components.res";
 
 interface UseHomeResult {
-  evidences: IEvidence[];
+  components: IComponents[];
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
@@ -11,23 +12,23 @@ interface UseHomeResult {
 }
 
 export default function useHome(): UseHomeResult {
-  const evidences = useTasksStore((s) => s.evidences);
+  const components = useTasksStore((s) => s.components);
   const isLoading = useTasksStore((s) => s.isLoading);
   const error = useTasksStore((s) => s.error);
-  const getAllEvidences = useTasksStore((s) => s.getAllEvidences);
+  const getComponents = useTasksStore((s) => s.getComponents);
   const clearError = useTasksStore((s) => s.clearError);
 
   const refresh = useCallback(async () => {
     try {
-      await getAllEvidences();
+      await getComponents();
     } catch {
-      // el store ya guarda el error, no es necesario manejarlo aquí
+      toast.error("Error al cargar los componentes");
     }
-  }, [getAllEvidences]);
+  }, [getComponents]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
-  return { evidences, isLoading, error, refresh, clearError };
+  return { components, isLoading, error, refresh, clearError };
 }

@@ -5,7 +5,7 @@ import { IUploadEvidenceReq } from "../domain/upload-evidence";
 
 const uploadComponent = async (data: IUploadComponentReq) => {
     try {
-        const response = await axiosInstance.post("/components", data);
+        const response = await axiosInstance.post("/componentes", data);
         return response.data;
     } catch (error) {
         console.error("Error during register:", error);
