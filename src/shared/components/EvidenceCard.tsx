@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardBody,
@@ -6,12 +7,16 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Chip,
+  Avatar,
+  Button,
 } from "@heroui/react";
-import { Chip } from "@heroui/react";
-import { Avatar } from "@heroui/react";
-import { Button } from "@heroui/react";
 import { CalendarDays, Target, Users, FileText } from "lucide-react";
 import type { IEvidence } from "../../core/tasks/domain/upload-evidence/upload-evidence.res";
+import { ESTADOS } from "@/pages/evidences/upload/options/estados";
+import { useTasksStore } from "@/store/tasks.store";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface EvidenceCardProps {
   evidence: IEvidence;
@@ -70,7 +75,40 @@ const getMonthName = (mes: number) => {
 };
 
 export function EvidenceCard({ evidence }: EvidenceCardProps) {
-  // handler removed: not used
+  const { updateEvidence, getAllEvidences } = useTasksStore();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [estado, setEstado] = useState(evidence.estado);
+  const [entregadoEn, setEntregadoEn] = useState(evidence.entregadoEn ?? null);
+
+  const handleChangeEstado = async (nuevoEstado: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await updateEvidence({
+        id: evidence._id,
+        estado: nuevoEstado,
+      });
+      setEstado(nuevoEstado);
+      // Si la respuesta trae nueva fecha de entrega, actualizarla
+      if (res?.data && Array.isArray(res.data)) {
+        const updated = res.data.find((ev: IEvidence) => ev._id === evidence._id);
+        setEntregadoEn(updated?.actividad?.entregadoEn ?? null);
+      } else if (res?.data && res.data.actividad) {
+        setEntregadoEn(res.data.actividad.entregadoEn ?? null);
+      }
+      toast.success("Estado actualizado");
+      if (typeof getAllEvidences === "function") getAllEvidences();
+    } catch (err: any) {
+      setError(err?.message || "Error al actualizar estado");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mostrar entregadoEn solo si el estado es Entregada o Entrega extemporánea
+  const mostrarEntregadoEn =
+    (estado === "Entregada" || estado === "Entrega Extemporanea" || estado === "Entrega extemporanea") && entregadoEn;
 
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-medium hover:shadow-large transition-shadow duration-200">
@@ -85,12 +123,12 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             </p>
           </div>
           <Chip
-            color={getStatusColor(evidence.estado)}
+            color={getStatusColor(estado)}
             variant="flat"
             size="sm"
             className="shrink-0"
           >
-            {evidence.estado}
+            {estado}
           </Chip>
         </div>
       </CardHeader>
@@ -166,20 +204,37 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             <div className="text-xs text-default-500">
               <span>Entrega: {formatDate(evidence.fechaEntrega)}</span>
             </div>
+            {mostrarEntregadoEn && (
+              <div className="text-xs text-success-600">
+                <span>
+                  Entregada en: {formatDate(entregadoEn as string)}
+                </span>
+              </div>
+            )}
           </div>
 
           <Dropdown>
             <DropdownTrigger>
-              <Button variant="bordered">Cambiar estado</Button>
+              <Button variant="bordered" isLoading={loading} disabled={loading}>
+                Cambiar estado
+              </Button>
             </DropdownTrigger>
-            <DropdownMenu aria-label="Static Actions">
-              <DropdownItem key="new">Entregada</DropdownItem>
-              <DropdownItem key="copy">Por entregar</DropdownItem>
-              <DropdownItem key="edit">Extemporánea</DropdownItem>
-              <DropdownItem key="delete">No logro</DropdownItem>
+            <DropdownMenu aria-label="Cambiar estado">
+              {ESTADOS.map((estadoOpt) => (
+                <DropdownItem
+                  key={estadoOpt.value}
+                  onClick={() => handleChangeEstado(estadoOpt.value)}
+                  isDisabled={loading || estadoOpt.value === estado}
+                >
+                  {estadoOpt.label}
+                </DropdownItem>
+              ))}
             </DropdownMenu>
           </Dropdown>
         </div>
+        {error && (
+          <div className="text-xs text-red-500 mt-2">{error}</div>
+        )}
       </CardBody>
     </Card>
   );

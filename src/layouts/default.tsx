@@ -43,7 +43,7 @@ export default function DefaultLayout({
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>
-      <footer className="w-full flex items-center justify-center py-3">
+      <footer className="w-full flex items-center justify-center py-10 border-t mt-10">
         <Link
           isExternal={false}
           className="flex items-center gap-2"

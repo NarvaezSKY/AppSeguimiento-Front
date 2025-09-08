@@ -170,6 +170,8 @@ export default defineConfig([
           next: ["const", "let", "var"],
         },
       ],
+
+      "jsx-a11y/label-has-associated-control": "off",
     },
   },
 ]);

@@ -4,6 +4,7 @@ import { IUploadComponentReq } from "../domain/upload-component";
 import { IUploadEvidenceReq } from "../domain/upload-evidence";
 import { IGetAllEvidencesReq } from "../domain/get-evidences";
 import { IUploadActivityReq } from "../domain/upload-activity";
+import { IUpdateEvidenceReq } from "../domain/update-evidence";
 
 const uploadComponent = async (data: IUploadComponentReq) => {
     try {
@@ -65,10 +66,21 @@ const uploadActivity = async (data: IUploadActivityReq) => {
     }
 }
 
+const updateEvidence = async (data: IUpdateEvidenceReq) => {
+    try {
+        const response = await axiosInstance.patch(`/evidencias/${data.id}/estado`, data);
+        return response.data;
+    } catch (error) {
+        console.error("Error during register:", error);
+        throw error;
+    }
+}
+
 export const tasksRepository: ITasksRepository = {
     uploadComponent,
     uploadEvidence,
     getAllEvidences,
     getUniqueComponents,
-    uploadActivity
+    uploadActivity,
+    updateEvidence
 };

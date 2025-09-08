@@ -16,6 +16,7 @@ export interface IEvidence {
     };
     __v?: number;
   };
+  entregadoEn: string | null;
   tipoEvidencia: string;
   mes: number;
   anio: number;
