@@ -70,10 +70,7 @@ const getMonthName = (mes: number) => {
 };
 
 export function EvidenceCard({ evidence }: EvidenceCardProps) {
-  const handleMarkAsDelivered = () => {
-    console.log("[v0] Marking evidence as delivered:", evidence._id);
-    // Aquí iría la lógica para marcar como entregada
-  };
+  // handler removed: not used
 
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-medium hover:shadow-large transition-shadow duration-200">
@@ -81,10 +78,10 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-lg mb-1 text-balance">
-              {evidence.componente.componente}
+              {evidence.actividad.componente.nombreComponente}
             </h3>
             <p className="text-sm text-default-500 text-pretty truncate line-clamp-5">
-              {evidence.componente.actividad}
+              {evidence.actividad.actividad}
             </p>
           </div>
           <Chip
@@ -122,7 +119,7 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             <Target className="h-4 w-4 text-default-400" />
             <span className="text-sm text-default-500">Meta Anual:</span>
             <span className="text-sm font-medium">
-              {evidence.componente.metaAnual.toLocaleString()}
+              {evidence.actividad.metaAnual}
             </span>
           </div>
         </div>

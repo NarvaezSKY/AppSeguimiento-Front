@@ -51,6 +51,14 @@ function App() {
       <Route
         element={
           <ProtectedRoute>
+            <IndexPage />
+          </ProtectedRoute>
+        }
+        path="/evidences/:id"
+      />
+      <Route
+        element={
+          <ProtectedRoute>
             <UploadForm />
           </ProtectedRoute>
         }

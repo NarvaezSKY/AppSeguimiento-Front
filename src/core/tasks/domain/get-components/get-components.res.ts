@@ -6,7 +6,5 @@ export interface IGetComponentsRes {
 
 export interface IComponents {
     _id: string,
-    componente: string,
-    actividad: string,
-    metaAnual: number
+    nombreComponente: string,
 }
