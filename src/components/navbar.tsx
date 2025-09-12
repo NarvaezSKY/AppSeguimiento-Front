@@ -32,6 +32,17 @@ export const Navbar = () => {
         className="hidden sm:flex basis-1/5 sm:basis-full"
         justify="end"
       >
+
+        <NavbarItem className="gap-3 max-w-fit">
+          <Link
+            className="flex justify-end items-center gap-1"
+            color="foreground"
+            href="/users/68ba073327e5ac74d4a55726"
+          >
+            <p className="font-bold text-white">Edith Betancourt Sánchez</p>
+          </Link>
+        </NavbarItem>
+
         <NavbarItem className="hidden sm:flex gap-2">
           <ThemeSwitch />
         </NavbarItem>

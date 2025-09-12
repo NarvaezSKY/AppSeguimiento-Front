@@ -17,7 +17,7 @@ export function useUpload() {
 	const users = useUsersStore((s) => s.users);
 
 	// single combined form
-	const { register, handleSubmit, reset } = useForm<any>();
+	const { register, handleSubmit, reset, setValue, control } = useForm<any>();
 
 	// selection + state
 	const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
@@ -46,7 +46,28 @@ export function useUpload() {
 	};
 
 	const setTipo = (v: string | null) => setSelectedTipo(v);
-	const setMes = (v: number | null) => setSelectedMes(v);
+	const setMes = (v: number | null) => {
+		setSelectedMes(v);
+		// autocomplete fechaEntrega: day 5 of next month, year fixed to 2025
+		if (v && typeof v === 'number') {
+			// v is 1-12 (MESES options expected)
+			const nextMonth = v === 12 ? 1 : v + 1;
+			const year = 2025;
+			const mm = String(nextMonth).padStart(2, '0');
+			const dd = '05';
+			const dateStr = `${year}-${mm}-${dd}`;
+			try {
+				setValue('fechaEntrega', dateStr, { shouldDirty: true, shouldTouch: true });
+			} catch (e) {
+				// ignore
+			}
+		} else {
+			// clear fechaEntrega when month cleared
+			try {
+				setValue('fechaEntrega', '', { shouldDirty: true, shouldTouch: true });
+			} catch (e) {}
+		}
+	};
 	const setEstado = (v: string | null) => setSelectedEstado(v);
 
 	// Combined submit: uploads activity then evidence using activity id
@@ -103,6 +124,7 @@ export function useUpload() {
 
 	return {
 		register,
+	control,
 		handleSubmit,
 		reset,
 		componentOptions,

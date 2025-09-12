@@ -1,15 +1,27 @@
 import DefaultLayout from "@/layouts/default";
 import useHome from "./hooks/useHome";
 import { Button } from "@heroui/button";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import EvidenceModal from "./components/Modal";
 import { EvidenceCard } from "@/shared/components/EvidenceCard";
 
 export default function IndexPage() {
-  const { evidences, isLoading, error, clearError } = useHome();
+  const { evidences, isLoading, error, clearError, components, users, currentFilter, setComponenteFilter, setUsuarioFilter } = useHome();
   const navigate = useNavigate();
   const [selected, setSelected] = useState<any | null>(null);
+  const componentItems = components?.map((c: any) => (
+    <DropdownItem key={c._id} onClick={() => setComponenteFilter(c._id)}>
+      {c.nombreComponente}
+    </DropdownItem>
+  ));
+
+  const userItems = users?.map((u: any) => (
+    <DropdownItem key={u._id} onClick={() => setUsuarioFilter(u._id)}>
+      {u.nombre}
+    </DropdownItem>
+  ));
   return (
     <DefaultLayout>
       <section className="flex flex-col items-center gap-6 py-8 md:py-10 w-full">
@@ -30,6 +42,32 @@ export default function IndexPage() {
                   </button>
                 </div>
               )}
+
+              {/* Component filter dropdown */}
+              <Dropdown placement="bottom-start">
+                <DropdownTrigger>
+                  <Button variant="bordered" color="warning">
+                    {components?.length ? (components.find((c:any)=>c._id===currentFilter?.componente)?.nombreComponente ?? "Filtrar por componente") : "Filtrar por componente"}
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="Filtrar por componente">
+                  <DropdownItem onClick={() => setComponenteFilter(null)} key="all">Todos</DropdownItem>
+                  {componentItems as any}
+                </DropdownMenu>
+              </Dropdown>
+
+              {/* User filter dropdown */}
+              <Dropdown placement="bottom-start">
+                <DropdownTrigger>
+                  <Button variant="bordered" color="warning">
+                    {users?.length ? (users.find((u:any)=>u._id===currentFilter?.usuario)?.nombre ?? "Filtrar por usuario") : "Filtrar por usuario"}
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="Filtrar por usuario">
+                  <DropdownItem onClick={() => setUsuarioFilter(null)} key="all-users">Todos</DropdownItem>
+                  {userItems as any}
+                </DropdownMenu>
+              </Dropdown>
 
               <Button
                 color="success"

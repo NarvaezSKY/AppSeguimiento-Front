@@ -1,4 +1,5 @@
 import { useUpload } from "./hooks/useUpload";
+import { Controller } from "react-hook-form";
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
@@ -15,6 +16,7 @@ import DefaultLayout from "@/layouts/default";
 export default function UploadForm() {
   const {
     register,
+  control,
     handleSubmit,
     reset,
     componentOptions,
@@ -186,16 +188,24 @@ export default function UploadForm() {
               label="Año"
               type="number"
               placeholder="Año"
+              defaultValue="2025"
               required
               disabled={isUploadingActivity || isUploadingEvidence}
               {...register("anio", { required: true })}
             />
-            <Input
-              label="Fecha de Entrega"
-              type="date"
-              required
-              disabled={isUploadingActivity || isUploadingEvidence}
-              {...register("fechaEntrega", { required: true })}
+            <Controller
+              control={control}
+              name="fechaEntrega"
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input
+                  label="Fecha de Entrega"
+                  type="date"
+                  required
+                  disabled={isUploadingActivity || isUploadingEvidence}
+                  {...field}
+                />
+              )}
             />
             {/* Responsables: multi-select dropdown populated from users store */}
             <div>
