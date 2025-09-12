@@ -1,4 +1,3 @@
-
 import {
   Card,
   CardBody,
@@ -15,8 +14,9 @@ import { CalendarDays, Target, Users, FileText } from "lucide-react";
 import type { IEvidence } from "../../core/tasks/domain/upload-evidence/upload-evidence.res";
 import { ESTADOS } from "@/pages/evidences/upload/options/estados";
 import { useTasksStore } from "@/store/tasks.store";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
+import Modal from "./Modal";
 
 interface EvidenceCardProps {
   evidence: IEvidence;
@@ -81,21 +81,54 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
   const [estado, setEstado] = useState(evidence.estado);
   const [entregadoEn, setEntregadoEn] = useState(evidence.entregadoEn ?? null);
 
+  // Modal para seleccionar fecha de entrega
+  const [modalOpen, setModalOpen] = useState(false);
+  const [pendingEstado, setPendingEstado] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>("");
+
+  // Para evitar doble submit
+  const isSubmittingRef = useRef(false);
+
   const handleChangeEstado = async (nuevoEstado: string) => {
+    // Si el nuevo estado requiere fecha de entrega, abrir modal
+    if (
+      nuevoEstado === "Entregada" ||
+      nuevoEstado === "Entrega Extemporanea" ||
+      nuevoEstado === "Entrega extemporanea"
+    ) {
+      setPendingEstado(nuevoEstado);
+      setModalOpen(true);
+      setSelectedDate(""); // limpiar fecha previa
+      return;
+    }
+    // Otros estados: actualizar directo
+    await doUpdateEstado(nuevoEstado);
+  };
+
+  const doUpdateEstado = async (nuevoEstado: string, fechaEntrega?: string) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await updateEvidence({
+      const payload: any = {
         id: evidence._id,
         estado: nuevoEstado,
-      });
+      };
+      if (
+        (nuevoEstado === "Entregada" ||
+          nuevoEstado === "Entrega Extemporanea" ||
+          nuevoEstado === "Entrega extemporanea") &&
+        fechaEntrega
+      ) {
+        payload.entregadoEn = fechaEntrega;
+      }
+      const res = await updateEvidence(payload);
       setEstado(nuevoEstado);
       // Si la respuesta trae nueva fecha de entrega, actualizarla
       if (res?.data && Array.isArray(res.data)) {
         const updated = res.data.find((ev: IEvidence) => ev._id === evidence._id);
-        setEntregadoEn(updated?.actividad?.entregadoEn ?? null);
-      } else if (res?.data && res.data.actividad) {
-        setEntregadoEn(res.data.actividad.entregadoEn ?? null);
+        setEntregadoEn(updated?.entregadoEn ?? null);
+      } else if (res?.data && res.data.entregadoEn) {
+        setEntregadoEn(res.data.entregadoEn ?? null);
       }
       toast.success("Estado actualizado");
       if (typeof getAllEvidences === "function") getAllEvidences();
@@ -103,12 +136,26 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
       setError(err?.message || "Error al actualizar estado");
     } finally {
       setLoading(false);
+      isSubmittingRef.current = false;
     }
+  };
+
+  // Confirmar desde el modal
+  const handleModalConfirm = async () => {
+    if (!selectedDate || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setModalOpen(false);
+    await doUpdateEstado(pendingEstado!, selectedDate);
+    setPendingEstado(null);
+    setSelectedDate("");
   };
 
   // Mostrar entregadoEn solo si el estado es Entregada o Entrega extemporánea
   const mostrarEntregadoEn =
     (estado === "Entregada" || estado === "Entrega Extemporanea" || estado === "Entrega extemporanea") && entregadoEn;
+
+  // Calcular fecha máxima para el input date (hoy)
+  const maxDate = new Date().toISOString().split("T")[0];
 
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-medium hover:shadow-large transition-shadow duration-200">
@@ -213,7 +260,7 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             )}
           </div>
 
-          <Dropdown>
+          <Dropdown isDisabled={evidence.estado === "Entregada"}>
             <DropdownTrigger>
               <Button variant="bordered" isLoading={loading} disabled={loading}>
                 Cambiar estado
@@ -235,6 +282,55 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
         {error && (
           <div className="text-xs text-red-500 mt-2">{error}</div>
         )}
+
+        {/* Modal para seleccionar fecha de entrega */}
+        <Modal
+          open={modalOpen}
+          title="Selecciona la fecha de entrega"
+          onClose={() => {
+            setModalOpen(false);
+            setPendingEstado(null);
+            setSelectedDate("");
+          }}
+          footer={
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="light"
+                onClick={() => {
+                  setModalOpen(false);
+                  setPendingEstado(null);
+                  setSelectedDate("");
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="solid"
+                color="primary"
+                onClick={handleModalConfirm}
+                disabled={!selectedDate}
+              >
+                Aceptar
+              </Button>
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-4">
+            <label className="text-sm font-medium">
+              Fecha de entrega
+              <input
+                type="date"
+                className="mt-2 border rounded px-3 py-2"
+                max={maxDate}
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+              />
+            </label>
+            <span className="text-xs text-default-500">
+              No puedes seleccionar una fecha futura.
+            </span>
+          </div>
+        </Modal>
       </CardBody>
     </Card>
   );

@@ -10,13 +10,14 @@ import {
   DropdownItem,
 } from "@heroui/react";
 import DefaultLayout from "@/layouts/default";
+import { concurrenciaEvidencia } from "./options/meses";
 
 // combined form data is inferred
 
 export default function UploadForm() {
   const {
     register,
-  control,
+    control,
     handleSubmit,
     reset,
     componentOptions,
@@ -39,6 +40,9 @@ export default function UploadForm() {
     setMes,
     selectedEstado,
     setEstado,
+    // Nuevo estado para concurrencia
+    selectedConcurrencia,
+    setConcurrencia,
   } = useUpload();
 
   // visual-only component; logic handled by useUpload hook
@@ -110,14 +114,42 @@ export default function UploadForm() {
               disabled={isUploadingActivity || isUploadingEvidence}
               {...register("actividad", { required: true })}
             />
-            <Input
-              label="Meta Anual"
-              type="number"
-              placeholder="Meta anual"
-              required
-              disabled={isUploadingActivity || isUploadingEvidence}
-              {...register("metaAnual", { required: true })}
-            />
+
+            {/* Meta Anual ahora es concurrenciaEvidencia */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">
+                Concurrencia de Evidencia
+              </label>
+              <Dropdown placement="bottom-start">
+                <DropdownTrigger>
+                  <button
+                    type="button"
+                    className="w-full text-left px-3 py-2 border rounded flex justify-between items-center"
+                    disabled={isUploadingActivity || isUploadingEvidence}
+                  >
+                    <span>
+                      {selectedConcurrencia
+                        ? concurrenciaEvidencia.find(
+                            (c) => c.value === selectedConcurrencia
+                          )?.label
+                        : "Selecciona concurrencia"}
+                    </span>
+                    <span className="text-sm opacity-70">▾</span>
+                  </button>
+                </DropdownTrigger>
+                <DropdownMenu>
+                  {concurrenciaEvidencia.map((c) => (
+                    <DropdownItem
+                      key={c.value}
+                      onClick={() => setConcurrencia(c.value)}
+                      textValue={c.label}
+                    >
+                      {c.label}
+                    </DropdownItem>
+                  ))}
+                </DropdownMenu>
+              </Dropdown>
+            </div>
 
             {/* Tipo de evidencia (dropdown) */}
             <div>

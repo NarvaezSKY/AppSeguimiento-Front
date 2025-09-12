@@ -16,3 +16,13 @@ export const MESES: Option<number>[] = [
 ];
 
 export type Mes = typeof MESES[number]["value"];
+
+export const concurrenciaEvidencia: Option<number>[] = [
+	{ value: 1, label: "Anual" },
+	{ value: 11, label: "Mensual" },
+	{ value: 2, label: "Semestral" },
+	{ value: 4, label: "Trimestral" },
+	{ value: 6, label: "Bimestral" },
+]
+
+export type ConstanciaEvidencia = typeof concurrenciaEvidencia[number]["value"];

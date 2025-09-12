@@ -10,11 +10,17 @@ import {
 
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Logo } from "@/components/icons";
+import { useAuthStore } from "@/store/auth.store";
 
 export const Navbar = () => {
+  const user= useAuthStore((s) => s.user);
 
   return (
-    <HeroUINavbar maxWidth="xl" position="sticky" className="bg-success text-white">
+    <HeroUINavbar
+      maxWidth="xl"
+      position="sticky"
+      className="bg-success text-white"
+    >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand className="gap-3 max-w-fit">
           <Link
@@ -23,7 +29,9 @@ export const Navbar = () => {
             href="/"
           >
             <Logo className="text-white" />
-            <p className="font-bold text-white">Seguimiento Plan Operativo CMR</p>
+            <p className="font-bold text-white">
+              Seguimiento Plan Operativo CMR
+            </p>
           </Link>
         </NavbarBrand>
       </NavbarContent>
@@ -32,15 +40,16 @@ export const Navbar = () => {
         className="hidden sm:flex basis-1/5 sm:basis-full"
         justify="end"
       >
-
         <NavbarItem className="gap-3 max-w-fit">
-          <Link
-            className="flex justify-end items-center gap-1"
-            color="foreground"
-            href="/users/68ba073327e5ac74d4a55726"
-          >
-            <p className="font-bold text-white">Edith Betancourt Sánchez</p>
-          </Link>
+          {user && (
+            <Link
+              className="flex justify-end items-center gap-1"
+              color="foreground"
+              href="/users/68ba073327e5ac74d4a55726"
+            >
+              <p className="font-bold text-white">Edith Betancourt Sánchez</p>
+            </Link>
+          )}
         </NavbarItem>
 
         <NavbarItem className="hidden sm:flex gap-2">
@@ -53,8 +62,7 @@ export const Navbar = () => {
         <NavbarMenuToggle />
       </NavbarContent>
 
-      <NavbarMenu>
-      </NavbarMenu>
+      <NavbarMenu></NavbarMenu>
     </HeroUINavbar>
   );
 };
