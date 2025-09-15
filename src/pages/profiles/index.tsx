@@ -15,6 +15,8 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@heroui/react";
+import EstadoGraphics from "./Components/estadoGraphics";
+import { Divider } from "@heroui/react";
 
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -73,6 +75,8 @@ export default function ProfilePage() {
           </CardHeader>
         </Card>
 
+        {/* Gráfico: le paso las evidencias del usuario */}
+
         {/* Filtro de estado */}
         <div className="flex items-center gap-4">
           <span className="font-medium">Filtrar evidencias por estado:</span>
@@ -117,6 +121,8 @@ export default function ProfilePage() {
             ))
           )}
         </div>
+        <Divider />
+        <EstadoGraphics evidences={userEvidences} />
       </section>
     </DefaultLayout>
   );

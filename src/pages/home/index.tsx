@@ -1,7 +1,15 @@
 import { useState } from "react";
 import DefaultLayout from "@/layouts/default";
 import useHome from "./hooks/useHome";
-import { Button, Card, Link, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
+import {
+  Button,
+  Card,
+  Link,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@heroui/react";
 import { FaTasks } from "react-icons/fa";
 import { IoIosFolderOpen } from "react-icons/io";
 import { FiMoreVertical } from "react-icons/fi";
@@ -22,14 +30,15 @@ export default function IndexPage() {
   };
 
   const handleDelete = async (component: any) => {
-    if (!confirm(`Eliminar componente "${component.nombreComponente}"?`)) return;
+    if (!confirm(`Eliminar componente "${component.nombreComponente}"?`))
+      return;
     if (typeof deleteComponent === "function") {
       try {
         await deleteComponent(component._id);
         toast.success("Componente eliminado");
         try {
           await refresh();
-        } catch { }
+        } catch {}
       } catch {
         toast.error("Error al eliminar componente");
       }
@@ -70,7 +79,6 @@ export default function IndexPage() {
 
   return (
     <DefaultLayout>
-
       <section className="flex flex-col items-center gap-6 py-8 md:py-10 w-full bg-default-100 rounded">
         <div className="flex justify-between w-full max-w-2xl mb-7 px-4 gap-2">
           <h1 className="text-4xl font-semibold">Componentes</h1>
@@ -86,21 +94,26 @@ export default function IndexPage() {
         </div>
 
         {components.map((c: any) => {
-          const idx = stringToIndex(c._id ?? c.nombreComponente, colorTokens.length);
+          const idx = stringToIndex(
+            c._id ?? c.nombreComponente,
+            colorTokens.length
+          );
           const token = colorTokens[idx];
           const color = tokenToColor[token] ?? tokenToColor.default;
 
           return (
-            <Link href={`/evidences/${c._id}`} isExternal={false} key={c._id} className="w-full">
+            <Link
+              href={`/${c._id}/responsables`}
+              isExternal={false}
+              key={c._id}
+              className="w-full"
+            >
               <Card
                 key={c._id}
                 className="w-full max-w-2xl mx-auto shadow-medium hover:shadow-large transition-shadow duration-200 cursor-pointer"
-
               >
                 <div className="p-6 flex items-center">
-
                   <div className="flex items-center gap-1 mr-4">
-
                     <div className="ml-0">
                       <Dropdown placement="bottom-end">
                         <DropdownTrigger>
@@ -113,8 +126,14 @@ export default function IndexPage() {
                         </DropdownTrigger>
 
                         <DropdownMenu aria-label="Opciones componente">
-                          <DropdownItem onClick={() => handleEdit(c)} key={"1"}>Editar</DropdownItem>
-                          <DropdownItem onClick={() => handleDelete(c)} className="text-danger" key={"2"}>
+                          <DropdownItem onClick={() => handleEdit(c)} key={"1"}>
+                            Editar
+                          </DropdownItem>
+                          <DropdownItem
+                            onClick={() => handleDelete(c)}
+                            className="text-danger"
+                            key={"2"}
+                          >
                             Eliminar
                           </DropdownItem>
                         </DropdownMenu>
@@ -145,7 +164,12 @@ export default function IndexPage() {
           </Button>
         </Link>
 
-        <Modal open={openCreate} onClose={() => setOpenCreate(false)} title="Crear componente" size="sm">
+        <Modal
+          open={openCreate}
+          onClose={() => setOpenCreate(false)}
+          title="Crear componente"
+          size="sm"
+        >
           <UploadComponentForm onClose={() => setOpenCreate(false)} />
         </Modal>
       </section>

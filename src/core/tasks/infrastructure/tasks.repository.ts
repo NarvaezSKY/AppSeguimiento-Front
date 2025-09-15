@@ -76,8 +76,19 @@ const updateEvidence = async (data: IUpdateEvidenceReq) => {
     }
 }
 
+const getUsersByComponent = async (componentId: string) => {
+    try {
+        const response = await axiosInstance.get(`/componentes/${componentId}/responsables`);
+        return response.data;
+    } catch (error) {
+        console.error("Error during register:", error);
+        throw error;
+    }
+}
+
 export const tasksRepository: ITasksRepository = {
     uploadComponent,
+    getUsersByComponent,
     uploadEvidence,
     getAllEvidences,
     getUniqueComponents,

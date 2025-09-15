@@ -125,7 +125,9 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
       setEstado(nuevoEstado);
       // Si la respuesta trae nueva fecha de entrega, actualizarla
       if (res?.data && Array.isArray(res.data)) {
-        const updated = res.data.find((ev: IEvidence) => ev._id === evidence._id);
+        const updated = res.data.find(
+          (ev: IEvidence) => ev._id === evidence._id
+        );
         setEntregadoEn(updated?.entregadoEn ?? null);
       } else if (res?.data && res.data.entregadoEn) {
         setEntregadoEn(res.data.entregadoEn ?? null);
@@ -152,7 +154,10 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
 
   // Mostrar entregadoEn solo si el estado es Entregada o Entrega extemporánea
   const mostrarEntregadoEn =
-    (estado === "Entregada" || estado === "Entrega Extemporanea" || estado === "Entrega extemporanea") && entregadoEn;
+    (estado === "Entregada" ||
+      estado === "Entrega Extemporanea" ||
+      estado === "Entrega extemporanea") &&
+    entregadoEn;
 
   // Calcular fecha máxima para el input date (hoy)
   const maxDate = new Date().toISOString().split("T")[0];
@@ -197,6 +202,11 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             <span className="text-sm text-default-500">Período:</span>
             <span className="text-sm font-medium">
               {getMonthName(evidence.mes)} {evidence.anio}
+              {evidence.trimestre ? (
+                <span className="text-sm text-default-400 ml-2">
+                  · Trimestre {evidence.trimestre}
+                </span>
+              ) : null}
             </span>
           </div>
 
@@ -245,17 +255,12 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
         {/* Fechas y Botón */}
         <div className="flex items-center justify-between pt-2 border-t border-divider">
           <div className="flex flex-col gap-1">
-            <div className="text-xs text-default-500">
-              <span>Creado: {formatDate(evidence.creadoEn)}</span>
-            </div>
-            <div className="text-xs text-default-500">
-              <span>Entrega: {formatDate(evidence.fechaEntrega)}</span>
+            <div className="text-xs text-warning">
+              <span>Entrega hasta: {formatDate(evidence.fechaEntrega)}</span>
             </div>
             {mostrarEntregadoEn && (
               <div className="text-xs text-success-600">
-                <span>
-                  Entregada en: {formatDate(entregadoEn as string)}
-                </span>
+                <span>Entregada en: {formatDate(entregadoEn as string)}</span>
               </div>
             )}
           </div>
@@ -279,9 +284,7 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             </DropdownMenu>
           </Dropdown>
         </div>
-        {error && (
-          <div className="text-xs text-red-500 mt-2">{error}</div>
-        )}
+        {error && <div className="text-xs text-red-500 mt-2">{error}</div>}
 
         {/* Modal para seleccionar fecha de entrega */}
         <Modal

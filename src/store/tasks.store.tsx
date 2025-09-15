@@ -6,12 +6,14 @@ import {
   getComponentsUseCase,
   uploadActivityUseCase,
   updateEvidenceUseCase,
+  getUsersByComponentUseCase,
 } from "@/core/tasks/application";
 import { tasksRepository } from "@/core/tasks/infrastructure/tasks.repository";
 import { IEvidence } from "@/core/tasks/domain/upload-evidence";
 import { IComponents } from "@/core/tasks/domain/get-components/get-components.res";
 import { IGetAllEvidencesReq } from "@/core/tasks/domain/get-evidences";
 import { IActivity } from "@/core/tasks/domain/upload-activity";
+import { User } from "@/core/users/domain/get-all-users";
 
 interface TasksState {
   isLoading: boolean;
@@ -20,6 +22,7 @@ interface TasksState {
   evidences: IEvidence[];
   components: IComponents[];
   activities: IActivity[];
+  usersInComponent?: User[];
   error: string | null;
   lastActivityId?: string | null;
   createComponent: (data: any) => Promise<any>;
@@ -30,6 +33,7 @@ interface TasksState {
   getComponents: () => Promise<any>;
   uploadActivity: (data: any) => Promise<any>;
   updateEvidence: (data: any) => Promise<any>;
+  getUsersByComponent: (componentId: string) => Promise<any>;
 }
 
 export const useTasksStore = create<TasksState>((set) => ({
@@ -56,6 +60,25 @@ export const useTasksStore = create<TasksState>((set) => ({
           err?.response?.data?.message ||
           err?.message ||
           "Error al crear componente",
+      });
+      throw err;
+    }
+  },
+
+  getUsersByComponent: async (componentId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const getUsersByComponent = getUsersByComponentUseCase(tasksRepository);
+      const result = await getUsersByComponent(componentId);
+      set({ isLoading: false, error: null, usersInComponent: result.data });
+      return result;
+    } catch (err: any) {
+      set({
+        isLoading: false,
+        error:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Error al obtener usuarios",
       });
       throw err;
     }

@@ -9,9 +9,7 @@ export interface Option<T = string> {
 // Common estados used across the app. Values match the backend expected strings.
 export const ESTADOS: Option<string>[] = [
 	{ value: "Entregada", label: "Entregada" },
-	{ value: "Entrega futura", label: "Entrega futura" },
 	{ value: "Por entregar", label: "Por entregar" },
-	{ value: "Entrega Extemporanea", label: "Entrega Extemporanea" },
 	{ value: "No logro", label: "No logro" },
 ];
 

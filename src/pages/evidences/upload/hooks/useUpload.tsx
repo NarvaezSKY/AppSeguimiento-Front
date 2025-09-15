@@ -5,6 +5,7 @@ import { useUsersStore } from "../../../../store/users.store";
 import { TIPOS_EVIDENCIA } from "../options/tiposDeEvidencia";
 import { MESES } from "../options/meses";
 import { ESTADOS } from "../options/estados";
+import { trimestres } from "../options/meses";
 
 export function useUpload() {
   // store bindings
@@ -30,6 +31,7 @@ export function useUpload() {
   const [selectedTipo, setSelectedTipo] = useState<string | null>(null);
   const [selectedMes, setSelectedMes] = useState<number | null>(null);
   const [selectedEstado, setSelectedEstado] = useState<string | null>(null);
+  const [selectedTrimestre, setSelectedTrimestre] = useState<number | null>(null);
   const [selectedConcurrencia, setSelectedConcurrencia] = useState<
     number | null
   >(null);
@@ -81,6 +83,7 @@ export function useUpload() {
     }
   };
   const setEstado = (v: string | null) => setSelectedEstado(v);
+  const setTrimestre = (v: number | null) => setSelectedTrimestre(v);
   const setConcurrencia = (v: number | null) => setSelectedConcurrencia(v);
 
   // Combined submit: uploads activity then evidence using activity id
@@ -124,6 +127,7 @@ export function useUpload() {
       fechaEntrega: data.fechaEntrega,
       responsables: selectedResponsables,
       estado: selectedEstado ?? data.estado,
+      trimestre: selectedTrimestre ?? data.trimestre,
       // actividad will be appended by the store.uploadTask
     };
 
@@ -169,5 +173,8 @@ export function useUpload() {
     error,
     taskUploaded,
     onSubmit,
+    trimestres,
+    selectedTrimestre,
+    setTrimestre,
   };
 }

@@ -37,7 +37,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     return (
         <>
             <aside className="hidden md:flex flex-col h-full w-64 bg-default-100 border-r border-gray-200 pt-20 px-4 fixed z-30 pr-4">
-                <div className="flex flex-col h-screen justify-between">
+                <div className="flex flex-col h-screen justify-between mt-10">
                     <nav className="flex flex-col gap-2 flex-1">
                         <h1 className="font-bold">Módulos</h1>
                         <Link
@@ -52,11 +52,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         </Link>
                         <Link
                             className={`font-semibold text-success hover:text-default-800 underline flex justify-start gap-1 transition-all 
-    ${currentPath === "/users" ? "bg-success text-white rounded-md py-1 px-1 hover:text-white" : ""}`}
-                            href="/plan"
+    ${currentPath === "/evidences" ? "bg-success text-white rounded-md py-1 px-1 hover:text-white" : ""}`}
+                            href="/evidences"
                         >
                             <FaCalendarCheck className="w-4 h-4" />
-                            Ver plan anual
+                            Ver todas las evidencias
                         </Link>
                         <Divider />
                         <Accordion >
@@ -79,7 +79,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         </Accordion>
 
                     </nav>
-                    <div className="mb-[5rem] flex flex-col gap-2">
+                    <div className="mb-[1rem] flex flex-col gap-2">
                         <Divider />
                         <Button
                             className="w-full"

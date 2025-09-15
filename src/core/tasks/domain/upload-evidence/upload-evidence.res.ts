@@ -19,6 +19,7 @@ export interface IEvidence {
   entregadoEn: string | null;
   tipoEvidencia: string;
   mes: number;
+  trimestre: number;
   anio: number;
   responsables: {
     _id: string;

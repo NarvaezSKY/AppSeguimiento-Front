@@ -26,3 +26,12 @@ export const concurrenciaEvidencia: Option<number>[] = [
 ]
 
 export type ConstanciaEvidencia = typeof concurrenciaEvidencia[number]["value"];
+
+export const trimestres: Option<number>[] = [
+	{ value: 1, label: "Primer trimestre" },
+	{ value: 2, label: "Segundo trimestre" },
+	{ value: 3, label: "Tercer trimestre" },
+	{ value: 4, label: "Cuarto trimestre" },
+];
+
+export type Trimestre = typeof trimestres[number]["value"];

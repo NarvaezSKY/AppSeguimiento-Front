@@ -3,16 +3,10 @@ import { Controller } from "react-hook-form";
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
-import {
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-} from "@heroui/react";
 import DefaultLayout from "@/layouts/default";
 import { concurrenciaEvidencia } from "./options/meses";
-
-// combined form data is inferred
+import DropdownField from "./components/DropDownReutilizable"; // <-- nuevo componente
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/dropdown";
 
 export default function UploadForm() {
   const {
@@ -40,12 +34,12 @@ export default function UploadForm() {
     setMes,
     selectedEstado,
     setEstado,
-    // Nuevo estado para concurrencia
     selectedConcurrencia,
     setConcurrencia,
+    selectedTrimestre,
+    setTrimestre,
+    trimestres,
   } = useUpload();
-
-  // visual-only component; logic handled by useUpload hook
 
   return (
     <DefaultLayout>
@@ -55,58 +49,23 @@ export default function UploadForm() {
             Subir Actividad y Evidencia
           </h2>
 
-          {/* Selección de componente (reemplaza input anterior) */}
+          {/* Selección de componente (reemplazado por DropdownField) */}
           <div className="mb-4">
-            <label className="block text-sm text-gray-600 mb-2">
-              Componente
-            </label>
-
-            <Dropdown placement="bottom-start">
-              <DropdownTrigger>
-                <button
-                  type="button"
-                  className="w-full text-left px-3 py-2 border rounded flex justify-between items-center"
-                >
-                  <span>
-                    {selectedComponentId
-                      ? componentOptions.find(
-                          (o) => o.id === selectedComponentId
-                        )?.label
-                      : "Selecciona un componente"}
-                  </span>
-                  <span className="text-sm opacity-70">▾</span>
-                </button>
-              </DropdownTrigger>
-
-              <DropdownMenu>
-                {componentOptions.length === 0 ? (
-                  <DropdownItem
-                    isDisabled
-                    key={"sin-componentes"}
-                    textValue={"Sin componentes"}
-                  >
-                    Sin componentes
-                  </DropdownItem>
-                ) : (
-                  componentOptions.map((opt) => (
-                    <DropdownItem
-                      key={opt.id}
-                      onClick={() => setSelectedComponentId(opt.id)}
-                      textValue={opt.label}
-                    >
-                      {opt.label}
-                    </DropdownItem>
-                  ))
-                )}
-              </DropdownMenu>
-            </Dropdown>
+            <DropdownField
+              label="Componente"
+              placeholder="Selecciona un componente"
+              options={componentOptions.map((c: any) => ({
+                value: c.id,
+                label: c.label,
+              }))}
+              value={selectedComponentId ?? undefined}
+              onChange={(v) => setSelectedComponentId(v as string)}
+              disabled={isUploadingActivity || isUploadingEvidence}
+            />
           </div>
 
           {/* Combined form for activity + evidence */}
-          <form
-            className="flex flex-col gap-4"
-            onSubmit={handleSubmit(onSubmit)}
-          >
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
             <Input
               label="Actividad"
               placeholder="Nombre de la actividad"
@@ -115,107 +74,46 @@ export default function UploadForm() {
               {...register("actividad", { required: true })}
             />
 
-            {/* Meta Anual ahora es concurrenciaEvidencia */}
-            <div>
-              <label className="block text-sm text-gray-600 mb-2">
-                Concurrencia de Evidencia
-              </label>
-              <Dropdown placement="bottom-start">
-                <DropdownTrigger>
-                  <button
-                    type="button"
-                    className="w-full text-left px-3 py-2 border rounded flex justify-between items-center"
-                    disabled={isUploadingActivity || isUploadingEvidence}
-                  >
-                    <span>
-                      {selectedConcurrencia
-                        ? concurrenciaEvidencia.find(
-                            (c) => c.value === selectedConcurrencia
-                          )?.label
-                        : "Selecciona concurrencia"}
-                    </span>
-                    <span className="text-sm opacity-70">▾</span>
-                  </button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  {concurrenciaEvidencia.map((c) => (
-                    <DropdownItem
-                      key={c.value}
-                      onClick={() => setConcurrencia(c.value)}
-                      textValue={c.label}
-                    >
-                      {c.label}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </Dropdown>
-            </div>
+            {/* Concurrencia */}
+            <DropdownField
+              label="Concurrencia de Evidencia"
+              placeholder="Selecciona concurrencia"
+              options={concurrenciaEvidencia}
+              value={selectedConcurrencia ?? undefined}
+              onChange={(v) => setConcurrencia(v as number)}
+              disabled={isUploadingActivity || isUploadingEvidence}
+            />
 
-            {/* Tipo de evidencia (dropdown) */}
-            <div>
-              <label className="block text-sm text-gray-600 mb-2">
-                Tipo de Evidencia
-              </label>
-              <Dropdown placement="bottom-start">
-                <DropdownTrigger>
-                  <button
-                    type="button"
-                    className="w-full text-left px-3 py-2 border rounded flex justify-between items-center"
-                    disabled={isUploadingActivity || isUploadingEvidence}
-                  >
-                    <span>
-                      {selectedTipo
-                        ? TIPOS_EVIDENCIA.find((t) => t.value === selectedTipo)
-                            ?.label
-                        : "Selecciona tipo de evidencia"}
-                    </span>
-                    <span className="text-sm opacity-70">▾</span>
-                  </button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  {TIPOS_EVIDENCIA.map((t) => (
-                    <DropdownItem
-                      key={t.value}
-                      onClick={() => setTipo(t.value)}
-                      textValue={t.label}
-                    >
-                      {t.label}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </Dropdown>
-            </div>
-            {/* Mes (dropdown) */}
-            <div>
-              <label className="block text-sm text-gray-600 mb-2">Mes</label>
-              <Dropdown placement="bottom-start">
-                <DropdownTrigger>
-                  <button
-                    type="button"
-                    className="w-full text-left px-3 py-2 border rounded flex justify-between items-center"
-                    disabled={isUploadingActivity || isUploadingEvidence}
-                  >
-                    <span>
-                      {selectedMes
-                        ? MESES.find((m) => m.value === selectedMes)?.label
-                        : "Selecciona mes"}
-                    </span>
-                    <span className="text-sm opacity-70">▾</span>
-                  </button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  {MESES.map((m) => (
-                    <DropdownItem
-                      key={m.value}
-                      onClick={() => setMes(m.value)}
-                      textValue={m.label}
-                    >
-                      {m.label}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </Dropdown>
-            </div>
+            {/* Trimestre */}
+            <DropdownField
+              label="Trimestre"
+              placeholder="Selecciona trimestre"
+              options={trimestres}
+              value={selectedTrimestre ?? undefined}
+              onChange={(v) => setTrimestre(v as number)}
+              disabled={isUploadingActivity || isUploadingEvidence}
+            />
+
+            {/* Tipo de evidencia */}
+            <DropdownField
+              label="Tipo de Evidencia"
+              placeholder="Selecciona tipo de evidencia"
+              options={TIPOS_EVIDENCIA}
+              value={selectedTipo ?? undefined}
+              onChange={(v) => setTipo(v as string)}
+              disabled={isUploadingActivity || isUploadingEvidence}
+            />
+
+            {/* Mes */}
+            <DropdownField
+              label="Mes"
+              placeholder="Selecciona mes"
+              options={MESES}
+              value={selectedMes ?? undefined}
+              onChange={(v) => setMes(v as number)}
+              disabled={isUploadingActivity || isUploadingEvidence}
+            />
+
             <Input
               label="Año"
               type="number"
@@ -225,6 +123,7 @@ export default function UploadForm() {
               disabled={isUploadingActivity || isUploadingEvidence}
               {...register("anio", { required: true })}
             />
+
             <Controller
               control={control}
               name="fechaEntrega"
@@ -239,9 +138,10 @@ export default function UploadForm() {
                 />
               )}
             />
-            {/* Responsables: multi-select dropdown populated from users store */}
+
+            {/* Responsables: mantengo la lógica previa (multi-select con checks) */}
             <div>
-              <label className="block text-sm text-gray-600 mb-2">
+              <label className="block text-sm text-default-500 mb-2">
                 Responsables
               </label>
               <Dropdown placement="bottom-start">
@@ -300,37 +200,16 @@ export default function UploadForm() {
                 </DropdownMenu>
               </Dropdown>
             </div>
-            {/* Estado (dropdown) */}
-            <div>
-              <label className="block text-sm text-gray-600 mb-2">Estado</label>
-              <Dropdown placement="bottom-start">
-                <DropdownTrigger>
-                  <button
-                    type="button"
-                    className="w-full text-left px-3 py-2 border rounded flex justify-between items-center"
-                    disabled={isUploadingActivity || isUploadingEvidence}
-                  >
-                    <span>
-                      {selectedEstado
-                        ? ESTADOS.find((e) => e.value === selectedEstado)?.label
-                        : "Selecciona estado"}
-                    </span>
-                    <span className="text-sm opacity-70">▾</span>
-                  </button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  {ESTADOS.map((e) => (
-                    <DropdownItem
-                      key={e.value}
-                      onClick={() => setEstado(e.value)}
-                      textValue={e.label}
-                    >
-                      {e.label}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </Dropdown>
-            </div>
+
+            {/* Estado */}
+            <DropdownField
+              label="Estado"
+              placeholder="Selecciona estado"
+              options={ESTADOS}
+              value={selectedEstado ?? undefined}
+              onChange={(v) => setEstado(v as string)}
+              disabled={isUploadingActivity || isUploadingEvidence}
+            />
 
             {error && <span className="text-red-500 text-sm">{error}</span>}
 
@@ -354,13 +233,13 @@ export default function UploadForm() {
                   Subir Tarea
                 </Button>
 
-                <div className="text-sm text-gray-700">
+                <div className="text-sm text-default-500">
                   {isUploadingActivity && <span>Subiendo actividad...</span>}
                   {isUploadingEvidence && <span>Subiendo evidencia...</span>}
                   {!isUploadingActivity &&
                     !isUploadingEvidence &&
                     taskUploaded && (
-                      <span className="text-green-600">
+                      <span className="text-success-600">
                         Tarea subida correctamente
                       </span>
                     )}

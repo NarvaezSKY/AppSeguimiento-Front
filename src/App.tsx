@@ -14,6 +14,7 @@ import { PublicRoute } from "./PublicRoute";
 import { useUsersStore } from "./store/users.store";
 import UploadForm from "./pages/evidences/upload";
 import ProfilePage from "./pages/profiles";
+import { UsersByComponent } from "./pages/usersByComponent";
 
 function App() {
   const { verify } = useAuthStore();
@@ -39,6 +40,15 @@ function App() {
           </PublicRoute>
         }
         path="/login"
+      />
+
+      <Route
+        element={
+          <ProtectedRoute>
+            <UsersByComponent />
+          </ProtectedRoute>
+        }
+        path="/:componentId/responsables"
       />
 
       <Route

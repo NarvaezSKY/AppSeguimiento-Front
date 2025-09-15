@@ -25,7 +25,6 @@ export default function useHome(): UseHomeResult {
     try {
       await getComponents();
       await getAllUsers();
-
     } catch {
       toast.error("Error al cargar los componentes");
     }
@@ -35,5 +34,12 @@ export default function useHome(): UseHomeResult {
     refresh();
   }, [refresh]);
 
-  return { components, isLoading, error, refresh, clearError };
+
+  return {
+    components,
+    isLoading,
+    error,
+    refresh,
+    clearError,
+  };
 }
