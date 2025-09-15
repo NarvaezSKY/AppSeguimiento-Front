@@ -37,6 +37,8 @@ const getAllEvidences = async (filter?: IGetAllEvidencesReq) => {
             if (filter.anio != null) params.anio = Number(filter.anio);
             if (filter.estado) params.estado = filter.estado;
             if (filter.componente) params.componente = filter.componente;
+            if (filter.responsable) params.responsable = filter.responsable;
+            if (filter.trimestre != null) params.trimestre = Number(filter.trimestre);
         }
         const response = await axiosInstance.get("/evidencias", { params });
         return response.data;

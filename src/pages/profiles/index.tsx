@@ -5,6 +5,7 @@ import { useUsersStore } from "@/store/users.store";
 import { useTasksStore } from "@/store/tasks.store";
 import { EvidenceCard } from "@/shared/components/EvidenceCard";
 import { ESTADOS } from "../evidences/upload/options/estados";
+import { trimestres } from "../evidences/upload/options/meses";
 import {
   Card,
   CardHeader,
@@ -21,13 +22,66 @@ import { Divider } from "@heroui/react";
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const { users, getAllUsers } = useUsersStore();
-  const { evidences, getAllEvidences, isLoading } = useTasksStore();
+
+  // get components + lastComponentId from store
+  const {
+    evidences,
+    getAllEvidences,
+    isLoading,
+    lastComponentId,
+    components,
+    getComponents,
+  } = useTasksStore();
+
   const [selectedEstado, setSelectedEstado] = useState<string | null>(null);
+  const [selectedTrimestre, setSelectedTrimestre] = useState<number | null>(null);
+
+  // selected component filter (editable). Don't force overwrite user's choice:
+  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
+  const [manualComponentSelection, setManualComponentSelection] = useState(false);
+
+  // helper to set component from UI (marks selection as manual so auto-default won't override)
+  const selectComponent = (id: string | null) => {
+    setSelectedComponentId(id);
+    setManualComponentSelection(true);
+  };
+
+  // ensure components are loaded
+  useEffect(() => {
+    getComponents?.().catch(() => { });
+  }, [getComponents]);
 
   useEffect(() => {
     if (!users || users.length === 0) getAllUsers();
-    if (!evidences || evidences.length === 0) getAllEvidences();
-  }, []);
+
+    // if lastComponentId exists and user didn't pick manually, we don't overwrite selectedComponentId
+    // here compute the effective component to use for queries (prefer manual selectedComponentId,
+    // otherwise fall back to lastComponentId)
+    const effectiveComponentId =
+      manualComponentSelection || selectedComponentId
+        ? selectedComponentId
+        : lastComponentId ?? null;
+
+    const query: Record<string, any> = {};
+    if (userId) query.responsable = userId;
+    if (selectedEstado) query.estado = selectedEstado;
+    if (selectedTrimestre !== null && selectedTrimestre !== undefined)
+      query.trimestre = Number(selectedTrimestre);
+    if (effectiveComponentId) query.componente = effectiveComponentId;
+
+    getAllEvidences(query).catch(() => { });
+    // keep dependencies minimal but include flags that affect effectiveComponentId
+  }, [
+    userId,
+    selectedEstado,
+    selectedTrimestre,
+    selectedComponentId,
+    manualComponentSelection,
+    lastComponentId,
+    getAllEvidences,
+    getAllUsers,
+    users,
+  ]);
 
   const user = useMemo(
     () => users?.find((u) => u._id === userId),
@@ -36,15 +90,12 @@ export default function ProfilePage() {
 
   const userEvidences = useMemo(() => {
     if (!user) return [];
-    let filtered =
+    return (
       evidences?.filter((ev) =>
-        ev.responsables.some((r) => r._id === user._id)
-      ) || [];
-    if (selectedEstado) {
-      filtered = filtered.filter((ev) => ev.estado === selectedEstado);
-    }
-    return filtered;
-  }, [evidences, user, selectedEstado]);
+        ev.responsables?.some((r: any) => r._id === user._id)
+      ) || []
+    );
+  }, [evidences, user]);
 
   if (!user) {
     return (
@@ -55,6 +106,12 @@ export default function ProfilePage() {
       </DefaultLayout>
     );
   }
+
+  // display uses same effectiveComponentId logic so label matches el filtro aplicado
+  const effectiveComponentId =
+    manualComponentSelection || selectedComponentId
+      ? selectedComponentId
+      : lastComponentId ?? null;
 
   return (
     <DefaultLayout>
@@ -75,10 +132,33 @@ export default function ProfilePage() {
           </CardHeader>
         </Card>
 
-        {/* Gráfico: le paso las evidencias del usuario */}
-
-        {/* Filtro de estado */}
+        {/* Filtros: Componente + Estado + Trimestre */}
         <div className="flex items-center gap-4">
+          <span className="font-medium">Componente:</span>
+          <Dropdown>
+            <DropdownTrigger>
+              <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[200px]">
+                {effectiveComponentId
+                  ? (components ?? []).find((c: any) => c._id === effectiveComponentId)
+                    ?.nombreComponente ?? "Seleccionado"
+                  : "Todos"}
+                <span className="text-sm opacity-70">▼</span>
+              </button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="Filtrar por componente">
+              <DropdownItem key="all-comp" onClick={() => selectComponent(null)}>
+                Todos
+              </DropdownItem>
+              <>
+                {components?.map((c: any) => (
+                  <DropdownItem key={c._id} onClick={() => selectComponent(c._id)}>
+                    {c.nombreComponente}
+                  </DropdownItem>
+                ))}
+              </>
+            </DropdownMenu>
+          </Dropdown>
+
           <span className="font-medium">Filtrar evidencias por estado:</span>
           <Dropdown>
             <DropdownTrigger>
@@ -98,6 +178,36 @@ export default function ProfilePage() {
                     onClick={() => setSelectedEstado(estado.value)}
                   >
                     {estado.label}
+                  </DropdownItem>
+                ))}
+              </>
+            </DropdownMenu>
+          </Dropdown>
+
+          <span className="font-medium">Trimestre:</span>
+          <Dropdown>
+            <DropdownTrigger>
+              <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[200px]">
+                {selectedTrimestre
+                  ? trimestres.find((t) => t.value === selectedTrimestre)?.label
+                  : "Todos los trimestres"}
+                <span className="text-sm opacity-70">▼</span>
+              </button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="Filtrar por trimestre">
+              <DropdownItem
+                key="all-trim"
+                onClick={() => setSelectedTrimestre(null)}
+              >
+                Todos
+              </DropdownItem>
+              <>
+                {trimestres.map((tr) => (
+                  <DropdownItem
+                    key={tr.value}
+                    onClick={() => setSelectedTrimestre(tr.value)}
+                  >
+                    {tr.label}
                   </DropdownItem>
                 ))}
               </>

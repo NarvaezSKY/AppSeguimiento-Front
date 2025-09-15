@@ -4,4 +4,6 @@ export interface IGetAllEvidencesReq {
   anio?: number | string;
   estado?: string;
   componente?: string;
+  responsable?: string;
+  trimestre?: number;
 }

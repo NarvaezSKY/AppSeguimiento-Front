@@ -128,20 +128,35 @@ export default function EstadoGraphics({
               ) : (
                 data.items
                   .filter((it) => it.value > 0)
-                  .map((it) => (
-                    <path
-                      key={it.key}
-                      d={describeArc(
-                        CENTER,
-                        CENTER,
-                        RADIUS,
-                        it.startAngle,
-                        it.endAngle
-                      )}
-                      // usar clase de texto + fill-current para pintar con el token de color
-                      className={`${it.colorClass.text} fill-current`}
-                    />
-                  ))
+                  .map((it) => {
+                    const angle = it.endAngle - it.startAngle;
+                    // si el slice ocupa todo el círculo (360°), dibujar un <circle>
+                    if (angle >= 360 - 1e-6) {
+                      return (
+                        <circle
+                          key={it.key}
+                          cx={CENTER}
+                          cy={CENTER}
+                          r={RADIUS}
+                          className={`${it.colorClass.text} fill-current`}
+                        />
+                      );
+                    }
+                    return (
+                      <path
+                        key={it.key}
+                        d={describeArc(
+                          CENTER,
+                          CENTER,
+                          RADIUS,
+                          it.startAngle,
+                          it.endAngle
+                        )}
+                        // usar clase de texto + fill-current para pintar con el token de color
+                        className={`${it.colorClass.text} fill-current`}
+                      />
+                    );
+                  })
               )}
               <circle
                 cx={CENTER}

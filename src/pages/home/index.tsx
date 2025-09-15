@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 export default function IndexPage() {
   const { components, refresh } = useHome();
   const deleteComponent = useTasksStore((s) => (s as any).deleteComponent);
+  const { setLastComponentId } = useTasksStore();
   const [openCreate, setOpenCreate] = useState(false);
   const navigate = useNavigate();
 
@@ -38,7 +39,7 @@ export default function IndexPage() {
         toast.success("Componente eliminado");
         try {
           await refresh();
-        } catch {}
+        } catch { }
       } catch {
         toast.error("Error al eliminar componente");
       }
@@ -107,6 +108,7 @@ export default function IndexPage() {
               isExternal={false}
               key={c._id}
               className="w-full"
+              onClick={() => setLastComponentId(c._id)}
             >
               <Card
                 key={c._id}

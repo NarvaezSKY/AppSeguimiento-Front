@@ -20,7 +20,7 @@ export default function DefaultLayout({
   return (
     <div className="relative flex flex-col h-screen">
       <Navbar />
-      <div className="flex flex-1 mt-0">
+      <div className="flex flex-1 mt-10">
         {isAuthenticated && (
           <Button
             isIconOnly

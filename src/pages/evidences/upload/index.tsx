@@ -1,5 +1,5 @@
 import { useUpload } from "./hooks/useUpload";
-import { Controller } from "react-hook-form";
+// import { Controller } from "react-hook-form";
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
@@ -11,7 +11,7 @@ import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/d
 export default function UploadForm() {
   const {
     register,
-    control,
+    // control,
     handleSubmit,
     reset,
     componentOptions,
@@ -30,15 +30,17 @@ export default function UploadForm() {
     ESTADOS,
     selectedTipo,
     setTipo,
-    selectedMes,
-    setMes,
-    selectedEstado,
-    setEstado,
     selectedConcurrencia,
     setConcurrencia,
     selectedTrimestre,
     setTrimestre,
+    selectedEstado,
+    setEstado,
     trimestres,
+    // new
+    evidenceEntries,
+    setEntryMes,
+    setEntryTrimestre,
   } = useUpload();
 
   return (
@@ -84,7 +86,7 @@ export default function UploadForm() {
               disabled={isUploadingActivity || isUploadingEvidence}
             />
 
-            {/* Trimestre */}
+            {/* Trimestre (general) */}
             <DropdownField
               label="Trimestre"
               placeholder="Selecciona trimestre"
@@ -104,16 +106,6 @@ export default function UploadForm() {
               disabled={isUploadingActivity || isUploadingEvidence}
             />
 
-            {/* Mes */}
-            <DropdownField
-              label="Mes"
-              placeholder="Selecciona mes"
-              options={MESES}
-              value={selectedMes ?? undefined}
-              onChange={(v) => setMes(v as number)}
-              disabled={isUploadingActivity || isUploadingEvidence}
-            />
-
             <Input
               label="Año"
               type="number"
@@ -124,20 +116,46 @@ export default function UploadForm() {
               {...register("anio", { required: true })}
             />
 
-            <Controller
-              control={control}
-              name="fechaEntrega"
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Input
-                  label="Fecha de Entrega"
-                  type="date"
-                  required
-                  disabled={isUploadingActivity || isUploadingEvidence}
-                  {...field}
-                />
-              )}
-            />
+            {/* Dynamic entries for each evidence (mes, trimestre, fechaEntrega calculada) */}
+            <div>
+              <label className="block text-sm text-default-500 mb-2">Evidencias</label>
+              <div className="flex flex-col gap-2">
+                { (evidenceEntries ?? []).map((entry, idx) => (
+                  <div key={idx} className="grid grid-cols-3 gap-2 items-end">
+                    <div>
+                      <DropdownField
+                        label={`Mes #${idx + 1}`}
+                        placeholder="Selecciona mes"
+                        options={MESES}
+                        value={entry.mes ?? undefined}
+                        onChange={(v) => setEntryMes(idx, v as number)}
+                        disabled={isUploadingActivity || isUploadingEvidence}
+                      />
+                    </div>
+
+                    <div>
+                      <DropdownField
+                        label={`Trimestre #${idx + 1}`}
+                        placeholder="Selecciona trimestre"
+                        options={trimestres}
+                        value={entry.trimestre ?? undefined}
+                        onChange={(v) => setEntryTrimestre(idx, v as number)}
+                        disabled={isUploadingActivity || isUploadingEvidence}
+                      />
+                    </div>
+
+                    <div>
+                      <Input
+                        label={`Fecha de Entrega #${idx + 1}`}
+                        type="date"
+                        value={entry.fechaEntrega ?? ""}
+                        disabled
+                      />
+                    </div>
+                  </div>
+                )) }
+              </div>
+            </div>
 
             {/* Responsables: mantengo la lógica previa (multi-select con checks) */}
             <div>
@@ -201,7 +219,7 @@ export default function UploadForm() {
               </Dropdown>
             </div>
 
-            {/* Estado */}
+            {/* Estado (general) */}
             <DropdownField
               label="Estado"
               placeholder="Selecciona estado"
@@ -211,6 +229,7 @@ export default function UploadForm() {
               disabled={isUploadingActivity || isUploadingEvidence}
             />
 
+            {/* show error */}
             {error && <span className="text-red-500 text-sm">{error}</span>}
 
             <div className="flex items-center gap-3 mt-2">

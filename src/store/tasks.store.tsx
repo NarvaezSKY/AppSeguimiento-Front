@@ -25,6 +25,7 @@ interface TasksState {
   usersInComponent?: User[];
   error: string | null;
   lastActivityId?: string | null;
+  lastComponentId?: string | null;
   createComponent: (data: any) => Promise<any>;
   createEvidence: (data: any) => Promise<any>;
   uploadTask: (activityData: any, evidenceData: any) => Promise<any>;
@@ -34,6 +35,7 @@ interface TasksState {
   uploadActivity: (data: any) => Promise<any>;
   updateEvidence: (data: any) => Promise<any>;
   getUsersByComponent: (componentId: string) => Promise<any>;
+  setLastComponentId: (componentId: string) => void;
 }
 
 export const useTasksStore = create<TasksState>((set) => ({
@@ -45,6 +47,7 @@ export const useTasksStore = create<TasksState>((set) => ({
   components: [],
   activities: [],
   lastActivityId: null,
+  lastComponentId: null,
 
   createComponent: async (data) => {
     set({ isLoading: true, error: null });
@@ -64,6 +67,8 @@ export const useTasksStore = create<TasksState>((set) => ({
       throw err;
     }
   },
+
+  setLastComponentId: (componentId: string) => set({ lastComponentId: componentId }),
 
   getUsersByComponent: async (componentId: string) => {
     set({ isLoading: true, error: null });
@@ -125,7 +130,7 @@ export const useTasksStore = create<TasksState>((set) => ({
   // Upload both activity then evidence using the created activity id.
   uploadTask: async (activityData, evidenceData) => {
     // activityData: { componente, actividad, metaAnual }
-    // evidenceData: whatever createEvidence expects; we'll append actividad (id)
+    // evidenceData: either a single payload or an array of payloads
     set({
       isLoading: true,
       error: null,
@@ -146,11 +151,20 @@ export const useTasksStore = create<TasksState>((set) => ({
       });
 
       const createEvidence = uploadEvidenceUseCase(tasksRepository);
-      const evidencePayload = { ...evidenceData, actividad: activityId };
-      const evidenceResult = await createEvidence(evidencePayload);
 
-      set({ isUploadingEvidence: false, isLoading: false });
-      return { activity: activityResult, evidence: evidenceResult };
+      if (Array.isArray(evidenceData)) {
+        // create all evidences (in parallel)
+        const payloads = evidenceData.map((p) => ({ ...p, actividad: activityId }));
+        const promises = payloads.map((pl) => createEvidence(pl));
+        const results = await Promise.all(promises);
+        set({ isUploadingEvidence: false, isLoading: false });
+        return { activity: activityResult, evidence: results };
+      } else {
+        const evidencePayload = { ...evidenceData, actividad: activityId };
+        const evidenceResult = await createEvidence(evidencePayload);
+        set({ isUploadingEvidence: false, isLoading: false });
+        return { activity: activityResult, evidence: evidenceResult };
+      }
     } catch (err: any) {
       set({
         isUploadingActivity: false,
