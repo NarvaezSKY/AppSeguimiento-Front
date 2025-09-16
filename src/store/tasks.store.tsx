@@ -7,6 +7,7 @@ import {
   uploadActivityUseCase,
   updateEvidenceUseCase,
   getUsersByComponentUseCase,
+  getActividadesByResponsableUseCase,
 } from "@/core/tasks/application";
 import { tasksRepository } from "@/core/tasks/infrastructure/tasks.repository";
 import { IEvidence } from "@/core/tasks/domain/upload-evidence";
@@ -14,6 +15,7 @@ import { IComponents } from "@/core/tasks/domain/get-components/get-components.r
 import { IGetAllEvidencesReq } from "@/core/tasks/domain/get-evidences";
 import { IActivity } from "@/core/tasks/domain/upload-activity";
 import { User } from "@/core/users/domain/get-all-users";
+import { IActivityRes } from "@/core/tasks/domain/get-actividades-by-responsable";
 
 interface TasksState {
   isLoading: boolean;
@@ -22,6 +24,7 @@ interface TasksState {
   evidences: IEvidence[];
   components: IComponents[];
   activities: IActivity[];
+  activitiesInProfile?: IActivityRes[];
   usersInComponent?: User[];
   error: string | null;
   lastActivityId?: string | null;
@@ -36,6 +39,8 @@ interface TasksState {
   updateEvidence: (data: any) => Promise<any>;
   getUsersByComponent: (componentId: string) => Promise<any>;
   setLastComponentId: (componentId: string) => void;
+  clearLastComponentId: () => void;
+  getActividadesByResponsable: (responsableId: string) => Promise<any>;
 }
 
 export const useTasksStore = create<TasksState>((set) => ({
@@ -68,7 +73,27 @@ export const useTasksStore = create<TasksState>((set) => ({
     }
   },
 
+  getActividadesByResponsable: async (responsableId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const getActividadesByResponsable = getActividadesByResponsableUseCase(tasksRepository);
+      const result = await getActividadesByResponsable(responsableId);
+      set({ isLoading: false, error: null, activitiesInProfile: result.data });
+      return result;
+    } catch (err: any) {
+      set({
+        isLoading: false,
+        error:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Error al obtener actividades",
+      });
+      throw err;
+    }
+  },
+
   setLastComponentId: (componentId: string) => set({ lastComponentId: componentId }),
+  clearLastComponentId: () => set({ lastComponentId: null }),
 
   getUsersByComponent: async (componentId: string) => {
     set({ isLoading: true, error: null });

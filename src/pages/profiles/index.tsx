@@ -23,7 +23,6 @@ export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const { users, getAllUsers } = useUsersStore();
 
-  // get components + lastComponentId from store
   const {
     evidences,
     getAllEvidences,
@@ -31,36 +30,59 @@ export default function ProfilePage() {
     lastComponentId,
     components,
     getComponents,
+    getActividadesByResponsable,
+    activitiesInProfile,
   } = useTasksStore();
 
   const [selectedEstado, setSelectedEstado] = useState<string | null>(null);
-  const [selectedTrimestre, setSelectedTrimestre] = useState<number | null>(null);
+  const [selectedTrimestre, setSelectedTrimestre] = useState<number | null>(
+    null
+  );
 
-  // selected component filter (editable). Don't force overwrite user's choice:
-  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
-  const [manualComponentSelection, setManualComponentSelection] = useState(false);
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
+    null
+  );
 
-  // helper to set component from UI (marks selection as manual so auto-default won't override)
+  const selectActivity = (id: string | null) => {
+    setSelectedActivityId(id);
+  };
+
+  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
+    null
+  );
+  const [manualComponentSelection, setManualComponentSelection] =
+    useState(false);
+
   const selectComponent = (id: string | null) => {
     setSelectedComponentId(id);
     setManualComponentSelection(true);
   };
 
-  // ensure components are loaded
   useEffect(() => {
-    getComponents?.().catch(() => { });
+    getComponents?.().catch(() => {});
   }, [getComponents]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    getActividadesByResponsable?.(userId).catch(() => {});
+  }, [userId, getActividadesByResponsable]);
+
+  useEffect(() => {
+    if (!selectedActivityId) return;
+    const exists = activitiesInProfile?.some(
+      (a: any) => a._id === selectedActivityId
+    );
+    if (!exists) setSelectedActivityId(null);
+  }, [activitiesInProfile, selectedActivityId]);
 
   useEffect(() => {
     if (!users || users.length === 0) getAllUsers();
 
-    // if lastComponentId exists and user didn't pick manually, we don't overwrite selectedComponentId
-    // here compute the effective component to use for queries (prefer manual selectedComponentId,
-    // otherwise fall back to lastComponentId)
     const effectiveComponentId =
       manualComponentSelection || selectedComponentId
         ? selectedComponentId
-        : lastComponentId ?? null;
+        : (lastComponentId ?? null);
 
     const query: Record<string, any> = {};
     if (userId) query.responsable = userId;
@@ -69,8 +91,9 @@ export default function ProfilePage() {
       query.trimestre = Number(selectedTrimestre);
     if (effectiveComponentId) query.componente = effectiveComponentId;
 
-    getAllEvidences(query).catch(() => { });
-    // keep dependencies minimal but include flags that affect effectiveComponentId
+    if (selectedActivityId) query.actividad = selectedActivityId;
+
+    getAllEvidences(query).catch(() => {});
   }, [
     userId,
     selectedEstado,
@@ -81,6 +104,7 @@ export default function ProfilePage() {
     getAllEvidences,
     getAllUsers,
     users,
+    selectedActivityId,
   ]);
 
   const user = useMemo(
@@ -107,11 +131,10 @@ export default function ProfilePage() {
     );
   }
 
-  // display uses same effectiveComponentId logic so label matches el filtro aplicado
   const effectiveComponentId =
     manualComponentSelection || selectedComponentId
       ? selectedComponentId
-      : lastComponentId ?? null;
+      : (lastComponentId ?? null);
 
   return (
     <DefaultLayout>
@@ -132,26 +155,33 @@ export default function ProfilePage() {
           </CardHeader>
         </Card>
 
-        {/* Filtros: Componente + Estado + Trimestre */}
-        <div className="flex items-center gap-4">
+        {/* Filtros: Componente + Estado + Trimestre + Actividad */}
+        <div className="flex items-center gap-4 flex-wrap">
           <span className="font-medium">Componente:</span>
           <Dropdown>
             <DropdownTrigger>
               <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[200px]">
                 {effectiveComponentId
-                  ? (components ?? []).find((c: any) => c._id === effectiveComponentId)
-                    ?.nombreComponente ?? "Seleccionado"
+                  ? ((components ?? []).find(
+                      (c: any) => c._id === effectiveComponentId
+                    )?.nombreComponente ?? "Seleccionado")
                   : "Todos"}
                 <span className="text-sm opacity-70">▼</span>
               </button>
             </DropdownTrigger>
             <DropdownMenu aria-label="Filtrar por componente">
-              <DropdownItem key="all-comp" onClick={() => selectComponent(null)}>
+              <DropdownItem
+                key="all-comp"
+                onClick={() => selectComponent(null)}
+              >
                 Todos
               </DropdownItem>
               <>
                 {components?.map((c: any) => (
-                  <DropdownItem key={c._id} onClick={() => selectComponent(c._id)}>
+                  <DropdownItem
+                    key={c._id}
+                    onClick={() => selectComponent(c._id)}
+                  >
                     {c.nombreComponente}
                   </DropdownItem>
                 ))}
@@ -159,7 +189,36 @@ export default function ProfilePage() {
             </DropdownMenu>
           </Dropdown>
 
-          <span className="font-medium">Filtrar evidencias por estado:</span>
+          <span className="font-medium">Actividad:</span>
+          <Dropdown>
+            <DropdownTrigger>
+              <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[220px]">
+                {selectedActivityId
+                  ? (activitiesInProfile?.find(
+                      (a: any) => a._id === selectedActivityId
+                    )?.actividad ?? "Seleccionada")
+                  : "Todas las actividades"}
+                <span className="text-sm opacity-70">▼</span>
+              </button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="Filtrar por actividad">
+              <DropdownItem key="all-act" onClick={() => selectActivity(null)}>
+                Todas las actividades
+              </DropdownItem>
+              <>
+                {activitiesInProfile?.map((a: any) => (
+                  <DropdownItem
+                    key={a._id}
+                    onClick={() => selectActivity(a._id)}
+                  >
+                    {a.actividad}
+                  </DropdownItem>
+                ))}
+              </>
+            </DropdownMenu>
+          </Dropdown>
+
+          <span className="font-medium">Estado:</span>
           <Dropdown>
             <DropdownTrigger>
               <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[160px]">

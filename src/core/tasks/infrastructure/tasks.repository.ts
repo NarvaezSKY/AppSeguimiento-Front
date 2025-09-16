@@ -88,6 +88,16 @@ const getUsersByComponent = async (componentId: string) => {
     }
 }
 
+const getActividadesByResponsable = async (responsableId: string) => {
+    try {
+        const response = await axiosInstance.get(`/actividades/responsable/${responsableId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error during register:", error);
+        throw error;
+    }
+}
+
 export const tasksRepository: ITasksRepository = {
     uploadComponent,
     getUsersByComponent,
@@ -95,5 +105,6 @@ export const tasksRepository: ITasksRepository = {
     getAllEvidences,
     getUniqueComponents,
     uploadActivity,
-    updateEvidence
+    updateEvidence,
+    getActividadesByResponsable
 };
