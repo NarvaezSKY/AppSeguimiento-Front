@@ -18,6 +18,9 @@ import {
 } from "@heroui/react";
 import EstadoGraphics from "./Components/estadoGraphics";
 import { Divider } from "@heroui/react";
+import { truncate } from "./utils/truncate";
+import mapActivitiesToOptions from "./utils/actividades";
+import mapComponentsToOptions from "./utils/componentes";
 
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -136,6 +139,25 @@ export default function ProfilePage() {
       ? selectedComponentId
       : (lastComponentId ?? null);
 
+  // etiquetas truncadas para mostrar en los botones y en los items (con title para tooltip)
+  const effectiveComponent = (components ?? []).find(
+    (c: any) => c._id === effectiveComponentId
+  );
+  const effectiveComponentLabel = effectiveComponent
+    ? truncate(effectiveComponent.nombreComponente)
+    : "Todos";
+
+  const selectedActivity = activitiesInProfile?.find(
+    (a: any) => a._id === selectedActivityId
+  );
+  const selectedActivityLabel = selectedActivity
+    ? truncate(selectedActivity.actividad)
+    : "Todas las actividades";
+
+  const activityOptions = mapActivitiesToOptions(activitiesInProfile ?? [], 80);
+
+  const componentOptions = mapComponentsToOptions(components ?? [], 50);
+
   return (
     <DefaultLayout>
       <section className="max-w-4xl mx-auto py-10 flex flex-col gap-8">
@@ -160,12 +182,11 @@ export default function ProfilePage() {
           <span className="font-medium">Componente:</span>
           <Dropdown>
             <DropdownTrigger>
-              <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[200px]">
-                {effectiveComponentId
-                  ? ((components ?? []).find(
-                      (c: any) => c._id === effectiveComponentId
-                    )?.nombreComponente ?? "Seleccionado")
-                  : "Todos"}
+              <button
+                className="px-3 py-2 border rounded flex items-center gap-2 min-w-[200px]"
+                title={effectiveComponent?.nombreComponente}
+              >
+                {effectiveComponentLabel}
                 <span className="text-sm opacity-70">▼</span>
               </button>
             </DropdownTrigger>
@@ -173,16 +194,18 @@ export default function ProfilePage() {
               <DropdownItem
                 key="all-comp"
                 onClick={() => selectComponent(null)}
+                title="Todos"
               >
                 Todos
               </DropdownItem>
               <>
-                {components?.map((c: any) => (
+                {componentOptions.map((opt) => (
                   <DropdownItem
-                    key={c._id}
-                    onClick={() => selectComponent(c._id)}
+                    key={opt.value}
+                    onClick={() => selectComponent(opt.value)}
+                    title={opt.label}
                   >
-                    {c.nombreComponente}
+                    {opt.label}
                   </DropdownItem>
                 ))}
               </>
@@ -192,12 +215,11 @@ export default function ProfilePage() {
           <span className="font-medium">Actividad:</span>
           <Dropdown>
             <DropdownTrigger>
-              <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[220px]">
-                {selectedActivityId
-                  ? (activitiesInProfile?.find(
-                      (a: any) => a._id === selectedActivityId
-                    )?.actividad ?? "Seleccionada")
-                  : "Todas las actividades"}
+              <button
+                className="px-3 py-2 border rounded flex items-center gap-2 min-w-[220px]"
+                title={selectedActivity?.actividad}
+              >
+                {selectedActivityLabel}
                 <span className="text-sm opacity-70">▼</span>
               </button>
             </DropdownTrigger>
@@ -206,12 +228,13 @@ export default function ProfilePage() {
                 Todas las actividades
               </DropdownItem>
               <>
-                {activitiesInProfile?.map((a: any) => (
+                {activityOptions.map((opt) => (
                   <DropdownItem
-                    key={a._id}
-                    onClick={() => selectActivity(a._id)}
+                    key={opt.value}
+                    onClick={() => selectActivity(opt.value)}
+                    title={opt.label}
                   >
-                    {a.actividad}
+                    {opt.label}
                   </DropdownItem>
                 ))}
               </>

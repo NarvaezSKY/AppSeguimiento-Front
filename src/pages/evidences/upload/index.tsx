@@ -1,11 +1,10 @@
 import { useUpload } from "./hooks/useUpload";
-// import { Controller } from "react-hook-form";
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
 import DefaultLayout from "@/layouts/default";
 import { concurrenciaEvidencia } from "./options/meses";
-import DropdownField from "./components/DropDownReutilizable"; // <-- nuevo componente
+import DropdownField from "./components/DropDownReutilizable";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/dropdown";
 
 export default function UploadForm() {
@@ -32,8 +31,8 @@ export default function UploadForm() {
     setTipo,
     selectedConcurrencia,
     setConcurrencia,
-    selectedTrimestre,
-    setTrimestre,
+    // selectedTrimestre,
+    // setTrimestre,
     selectedEstado,
     setEstado,
     trimestres,
@@ -87,14 +86,14 @@ export default function UploadForm() {
             />
 
             {/* Trimestre (general) */}
-            <DropdownField
+            {/* <DropdownField
               label="Trimestre"
               placeholder="Selecciona trimestre"
               options={trimestres}
               value={selectedTrimestre ?? undefined}
               onChange={(v) => setTrimestre(v as number)}
               disabled={isUploadingActivity || isUploadingEvidence}
-            />
+            /> */}
 
             {/* Tipo de evidencia */}
             <DropdownField
@@ -120,7 +119,7 @@ export default function UploadForm() {
             <div>
               <label className="block text-sm text-default-500 mb-2">Evidencias</label>
               <div className="flex flex-col gap-2">
-                { (evidenceEntries ?? []).map((entry, idx) => (
+                {(evidenceEntries ?? []).map((entry, idx) => (
                   <div key={idx} className="grid grid-cols-3 gap-2 items-end">
                     <div>
                       <DropdownField
@@ -153,7 +152,7 @@ export default function UploadForm() {
                       />
                     </div>
                   </div>
-                )) }
+                ))}
               </div>
             </div>
 
@@ -172,13 +171,13 @@ export default function UploadForm() {
                     <span>
                       {selectedResponsables.length > 0
                         ? selectedResponsables
-                            .map((id) => {
-                              const u = (users ?? []).find(
-                                (x: any) => x._id === id || x.id === id
-                              );
-                              return u ? u.nombre || u.email : id;
-                            })
-                            .join(", ")
+                          .map((id) => {
+                            const u = (users ?? []).find(
+                              (x: any) => x._id === id || x.id === id
+                            );
+                            return u ? u.nombre || u.email : id;
+                          })
+                          .join(", ")
                         : "Selecciona responsables"}
                     </span>
                     <span className="text-sm opacity-70">▾</span>
