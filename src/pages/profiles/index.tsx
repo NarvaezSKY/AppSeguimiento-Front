@@ -1,8 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import DefaultLayout from "@/layouts/default";
-import { useUsersStore } from "@/store/users.store";
-import { useTasksStore } from "@/store/tasks.store";
 import { EvidenceCard } from "@/shared/components/EvidenceCard";
 import { ESTADOS } from "../evidences/upload/options/estados";
 import { trimestres } from "../evidences/upload/options/meses";
@@ -18,111 +15,28 @@ import {
 } from "@heroui/react";
 import EstadoGraphics from "./Components/estadoGraphics";
 import { Divider } from "@heroui/react";
-import { truncate } from "./utils/truncate";
-import mapActivitiesToOptions from "./utils/actividades";
-import mapComponentsToOptions from "./utils/componentes";
+import useProfile from "./hooks/useProfile";
 
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
-  const { users, getAllUsers } = useUsersStore();
 
   const {
-    evidences,
-    getAllEvidences,
-    isLoading,
-    lastComponentId,
-    components,
-    getComponents,
-    getActividadesByResponsable,
-    activitiesInProfile,
-  } = useTasksStore();
-
-  const [selectedEstado, setSelectedEstado] = useState<string | null>(null);
-  const [selectedTrimestre, setSelectedTrimestre] = useState<number | null>(
-    null
-  );
-
-  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
-    null
-  );
-
-  const selectActivity = (id: string | null) => {
-    setSelectedActivityId(id);
-  };
-
-  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
-    null
-  );
-  const [manualComponentSelection, setManualComponentSelection] =
-    useState(false);
-
-  const selectComponent = (id: string | null) => {
-    setSelectedComponentId(id);
-    setManualComponentSelection(true);
-  };
-
-  useEffect(() => {
-    getComponents?.().catch(() => {});
-  }, [getComponents]);
-
-  useEffect(() => {
-    if (!userId) return;
-
-    getActividadesByResponsable?.(userId).catch(() => {});
-  }, [userId, getActividadesByResponsable]);
-
-  useEffect(() => {
-    if (!selectedActivityId) return;
-    const exists = activitiesInProfile?.some(
-      (a: any) => a._id === selectedActivityId
-    );
-    if (!exists) setSelectedActivityId(null);
-  }, [activitiesInProfile, selectedActivityId]);
-
-  useEffect(() => {
-    if (!users || users.length === 0) getAllUsers();
-
-    const effectiveComponentId =
-      manualComponentSelection || selectedComponentId
-        ? selectedComponentId
-        : (lastComponentId ?? null);
-
-    const query: Record<string, any> = {};
-    if (userId) query.responsable = userId;
-    if (selectedEstado) query.estado = selectedEstado;
-    if (selectedTrimestre !== null && selectedTrimestre !== undefined)
-      query.trimestre = Number(selectedTrimestre);
-    if (effectiveComponentId) query.componente = effectiveComponentId;
-
-    if (selectedActivityId) query.actividad = selectedActivityId;
-
-    getAllEvidences(query).catch(() => {});
-  }, [
-    userId,
+    user,
+    userEvidences,
+    effectiveComponent,
+    effectiveComponentLabel,
+    componentOptions,
+    selectComponent,
+    selectedActivity,
+    selectedActivityLabel,
+    activityOptions,
+    selectActivity,
     selectedEstado,
+    setSelectedEstado,
     selectedTrimestre,
-    selectedComponentId,
-    manualComponentSelection,
-    lastComponentId,
-    getAllEvidences,
-    getAllUsers,
-    users,
-    selectedActivityId,
-  ]);
-
-  const user = useMemo(
-    () => users?.find((u) => u._id === userId),
-    [users, userId]
-  );
-
-  const userEvidences = useMemo(() => {
-    if (!user) return [];
-    return (
-      evidences?.filter((ev) =>
-        ev.responsables?.some((r: any) => r._id === user._id)
-      ) || []
-    );
-  }, [evidences, user]);
+    setSelectedTrimestre,
+    isLoading,
+  } = useProfile(userId ?? null);
 
   if (!user) {
     return (
@@ -133,30 +47,6 @@ export default function ProfilePage() {
       </DefaultLayout>
     );
   }
-
-  const effectiveComponentId =
-    manualComponentSelection || selectedComponentId
-      ? selectedComponentId
-      : (lastComponentId ?? null);
-
-  // etiquetas truncadas para mostrar en los botones y en los items (con title para tooltip)
-  const effectiveComponent = (components ?? []).find(
-    (c: any) => c._id === effectiveComponentId
-  );
-  const effectiveComponentLabel = effectiveComponent
-    ? truncate(effectiveComponent.nombreComponente)
-    : "Todos";
-
-  const selectedActivity = activitiesInProfile?.find(
-    (a: any) => a._id === selectedActivityId
-  );
-  const selectedActivityLabel = selectedActivity
-    ? truncate(selectedActivity.actividad)
-    : "Todas las actividades";
-
-  const activityOptions = mapActivitiesToOptions(activitiesInProfile ?? [], 80);
-
-  const componentOptions = mapComponentsToOptions(components ?? [], 50);
 
   return (
     <DefaultLayout>
@@ -177,16 +67,20 @@ export default function ProfilePage() {
           </CardHeader>
         </Card>
 
-        {/* Filtros: Componente + Estado + Trimestre + Actividad */}
+        {/* Filtros: ahora los títulos están dentro de cada Dropdown para ahorrar espacio */}
         <div className="flex items-center gap-4 flex-wrap">
-          <span className="font-medium">Componente:</span>
           <Dropdown>
             <DropdownTrigger>
               <button
                 className="px-3 py-2 border rounded flex items-center gap-2 min-w-[200px]"
                 title={effectiveComponent?.nombreComponente}
               >
-                {effectiveComponentLabel}
+                <div className="flex-1 text-left">
+                  <div className="text-xs text-gray-500 leading-none">
+                    Componente
+                  </div>
+                  <div className="truncate">{effectiveComponentLabel}</div>
+                </div>
                 <span className="text-sm opacity-70">▼</span>
               </button>
             </DropdownTrigger>
@@ -212,14 +106,18 @@ export default function ProfilePage() {
             </DropdownMenu>
           </Dropdown>
 
-          <span className="font-medium">Actividad:</span>
           <Dropdown>
             <DropdownTrigger>
               <button
                 className="px-3 py-2 border rounded flex items-center gap-2 min-w-[220px]"
                 title={selectedActivity?.actividad}
               >
-                {selectedActivityLabel}
+                <div className="flex-1 text-left">
+                  <div className="text-xs text-gray-500 leading-none">
+                    Actividad
+                  </div>
+                  <div className="truncate">{selectedActivityLabel}</div>
+                </div>
                 <span className="text-sm opacity-70">▼</span>
               </button>
             </DropdownTrigger>
@@ -241,11 +139,13 @@ export default function ProfilePage() {
             </DropdownMenu>
           </Dropdown>
 
-          <span className="font-medium">Estado:</span>
           <Dropdown>
             <DropdownTrigger>
               <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[160px]">
-                {selectedEstado ? selectedEstado : "Todos"}
+                <div className="flex-1 text-left">
+                  <div className="text-xs text-gray-500 leading-none">Estado</div>
+                  <div>{selectedEstado ? selectedEstado : "Todos"}</div>
+                </div>
                 <span className="text-sm opacity-70">▼</span>
               </button>
             </DropdownTrigger>
@@ -266,13 +166,18 @@ export default function ProfilePage() {
             </DropdownMenu>
           </Dropdown>
 
-          <span className="font-medium">Trimestre:</span>
           <Dropdown>
             <DropdownTrigger>
               <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[200px]">
-                {selectedTrimestre
-                  ? trimestres.find((t) => t.value === selectedTrimestre)?.label
-                  : "Todos los trimestres"}
+                <div className="flex-1 text-left">
+                  <div className="text-xs text-gray-500 leading-none">Trimestre</div>
+                  <div className="truncate">
+                    {selectedTrimestre
+                      ? trimestres.find((t) => t.value === selectedTrimestre)
+                          ?.label
+                      : "Todos los trimestres"}
+                  </div>
+                </div>
                 <span className="text-sm opacity-70">▼</span>
               </button>
             </DropdownTrigger>
@@ -297,7 +202,6 @@ export default function ProfilePage() {
           </Dropdown>
         </div>
 
-        {/* Evidencias */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {isLoading ? (
             <div className="col-span-full text-center text-gray-400 py-8">

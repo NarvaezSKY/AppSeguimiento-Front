@@ -12,6 +12,7 @@ export function useLogin() {
     try {
       await login(email, password);
       navigate("/");
+      toast.success("Iniciaste sesión exitosamente");
     } catch (err: any) {
       toast.error(
         err?.message || "Error al iniciar sesión. Verifica tus credenciales."

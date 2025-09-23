@@ -43,14 +43,14 @@ export default function DefaultLayout({
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>
-      <footer className="w-full flex items-center justify-center py-10 border-t mt-10">
+      <footer className="w-full flex items-center justify-center py-6 border-t mt-10">
         <Link
           isExternal={false}
           className="flex items-center gap-2"
           href="/"
           title="Seguimiento Plan Oprativo CMR"
         >
-          <span className="text-default-600">Seguimiento Plan Oprativo CMR</span>
+          <span className="text-default-600">Seguimiento Plan Oprativo - CMR</span>
           <p className="text-success font-bold">SENA</p>
           <span className="text-default-600">Regional Cauca - 2025</span>
         </Link>

@@ -6,6 +6,7 @@ import DefaultLayout from "@/layouts/default";
 import { useForm } from "react-hook-form";
 import { useLogin } from "./hooks/useLogin";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { Divider } from "@heroui/react";
 
 interface LoginForm {
   email: string;
@@ -24,8 +25,10 @@ export default function LoginPage() {
   return (
     <DefaultLayout>
       <section className="flex items-center justify-center pt-16">
-        <Card className="w-full max-w-sm p-6 shadow-lg">
-          <h2 className="text-2xl font-bold mb-6 text-center">Iniciar sesión</h2>
+        <Card className="w-full max-w-md p-6 shadow-lg">
+          <h2 className="text-2xl font-semibold mb-6 text-center text-4xl">¡Bienvenido de vuelta!</h2>
+          <h3 className="text-md text-center text-default-500 mb-4">Inicia sesión para gestionar las evidencias del Plan Operativo</h3>
+          <Divider className="mb-4"/>
           <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
             <Input
               type="email"
@@ -55,11 +58,11 @@ export default function LoginPage() {
                 {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
               </button>
             </div>
-
+            <Divider />
             {error && (
               <span className="text-red-500 text-sm text-center">{error}</span>
             )}
-            <Button color="primary" type="submit" fullWidth isLoading={isLoading}>
+            <Button color="success" type="submit" variant="shadow" fullWidth isLoading={isLoading}>
               Entrar
             </Button>
           </form>

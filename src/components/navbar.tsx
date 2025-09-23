@@ -7,18 +7,18 @@ import {
   NavbarMenuToggle,
   NavbarMenu,
 } from "@heroui/navbar";
+import LogoSENA from "/icon.png";
 
 import { ThemeSwitch } from "@/components/theme-switch";
-import { Logo } from "@/components/icons";
 import { useAuthStore } from "@/store/auth.store";
 
 export const Navbar = () => {
-  const user= useAuthStore((s) => s.user);
+  const user = useAuthStore((s) => s.user);
 
   return (
     <HeroUINavbar
       maxWidth="xl"
-      className="bg-success text-white fixed top-0 z-50 w-full"
+      className="bg-success text-white fixed top-0 z-50 w-full h-full max-h-[90px]"
     >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand className="gap-3 max-w-fit">
@@ -27,8 +27,8 @@ export const Navbar = () => {
             color="foreground"
             href="/"
           >
-            <Logo className="text-white" />
-            <p className="font-bold text-white">
+            <img src={LogoSENA} alt="logo sena" className="w-15 h-15" />
+            <p className="font-bold text-white text-xl">
               Seguimiento Plan Operativo CMR
             </p>
           </Link>
@@ -46,7 +46,7 @@ export const Navbar = () => {
               color="foreground"
               href="/users/68ba073327e5ac74d4a55726"
             >
-              <p className="font-bold text-white">Edith Betancourt Sánchez</p>
+              <p className="font-bold text-white text-xl">Edith Betancourt Sánchez</p>
             </Link>
           )}
         </NavbarItem>

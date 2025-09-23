@@ -87,7 +87,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               </AccordionItem>
             </Accordion>
           </nav>
-          <div className="mb-[4   rem] flex flex-col gap-2">
+          <div className="mb-[60px] flex flex-col gap-2">
             <Divider />
             <Button
               className="w-full"
