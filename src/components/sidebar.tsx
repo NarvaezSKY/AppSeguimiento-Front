@@ -10,7 +10,9 @@ import {
 } from "@heroui/react";
 
 import { TbSmartHome } from "react-icons/tb";
-import { FaCalendarCheck } from "react-icons/fa";
+import { HiOutlineDocumentReport } from "react-icons/hi";
+
+import { FaCalendarCheck, FaCalendarPlus } from "react-icons/fa";
 
 import { PiSignOutBold } from "react-icons/pi";
 import { useAuthStore } from "../store/auth.store";
@@ -51,6 +53,22 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             >
               <TbSmartHome className="w-5 h-5" />
               Inicio
+            </Link>
+            <Link
+              className={`font-semibold text-success hover:text-default-800 underline flex justify-start gap-1 transition-all 
+    ${currentPath === "/reporte" ? "bg-success text-white rounded-md py-1 px-1 hover:text-white" : ""}`}
+              href="/reporte"
+            >
+              <HiOutlineDocumentReport className="w-4 h-4" />
+              Reporte Power BI
+            </Link>
+            <Link
+              className={`font-semibold text-success hover:text-default-800 underline flex justify-start gap-1 transition-all 
+    ${currentPath === "/evidences/upload" ? "bg-success text-white rounded-md py-1 px-1 hover:text-white" : ""}`}
+              href="/evidences/upload"
+            >
+              <FaCalendarPlus className="w-4 h-4" />
+              Subir nueva evidencia
             </Link>
             <Link
               className={`font-semibold text-success hover:text-default-800 underline flex justify-start gap-1 transition-all 

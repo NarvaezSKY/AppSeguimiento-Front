@@ -1,10 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 
 import IndexPage from "@/pages/evidences/index";
-import DocsPage from "@/pages/docs";
-import PricingPage from "@/pages/pricing";
-import BlogPage from "@/pages/blog";
-import AboutPage from "@/pages/about";
 import LoginPage from "./pages/login/login";
 import ProtectedRoute from "./ProtectedRoute";
 import HomePage from "./pages/home";
@@ -15,6 +11,7 @@ import { useUsersStore } from "./store/users.store";
 import UploadForm from "./pages/evidences/upload";
 import ProfilePage from "./pages/profiles";
 import { UsersByComponent } from "./pages/usersByComponent";
+import { PowerBIReport } from "./pages/PowerBI";
 
 function App() {
   const { verify } = useAuthStore();
@@ -89,43 +86,19 @@ function App() {
       <Route
         element={
           <ProtectedRoute>
-            <HomePage />
+            <PowerBIReport />
           </ProtectedRoute>
         }
-        path="/"
+        path="/reporte"
       />
 
       <Route
         element={
           <ProtectedRoute>
-            <DocsPage />
+            <HomePage />
           </ProtectedRoute>
         }
-        path="/docs"
-      />
-      <Route
-        element={
-          <ProtectedRoute>
-            <PricingPage />
-          </ProtectedRoute>
-        }
-        path="/pricing"
-      />
-      <Route
-        element={
-          <ProtectedRoute>
-            <BlogPage />
-          </ProtectedRoute>
-        }
-        path="/blog"
-      />
-      <Route
-        element={
-          <ProtectedRoute>
-            <AboutPage />
-          </ProtectedRoute>
-        }
-        path="/about"
+        path="/"
       />
     </Routes>
   );

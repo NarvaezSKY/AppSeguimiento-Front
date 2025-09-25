@@ -58,7 +58,7 @@ export default function ProfilePage() {
             <div>
               <h2 className="text-2xl font-bold">{user.nombre}</h2>
               <div className="flex items-center gap-2 mt-1">
-                <Chip color="primary" size="sm">
+                <Chip color="primary" className="text-white" size="sm">
                   {user.vinculacion}
                 </Chip>
                 <span className="text-gray-500 text-sm">{user.email}</span>

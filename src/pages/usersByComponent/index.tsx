@@ -49,7 +49,7 @@ export const UsersByComponent = () => {
                         {user.nombre}
                       </h3>
                       <div className="flex flex-wrap items-center gap-2 mt-1">
-                        <Chip color="primary" size="sm">
+                        <Chip color="primary" className="text-white" size="sm">
                           {user.vinculacion}
                         </Chip>
                         <span className="text-default-400 text-sm truncate block max-w-[140px]">

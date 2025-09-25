@@ -85,16 +85,6 @@ export default function UploadForm() {
               disabled={isUploadingActivity || isUploadingEvidence}
             />
 
-            {/* Trimestre (general) */}
-            {/* <DropdownField
-              label="Trimestre"
-              placeholder="Selecciona trimestre"
-              options={trimestres}
-              value={selectedTrimestre ?? undefined}
-              onChange={(v) => setTrimestre(v as number)}
-              disabled={isUploadingActivity || isUploadingEvidence}
-            /> */}
-
             {/* Tipo de evidencia */}
             <DropdownField
               label="Tipo de Evidencia"
@@ -246,7 +236,7 @@ export default function UploadForm() {
                   color="primary"
                   type="submit"
                   isLoading={isUploadingActivity || isUploadingEvidence}
-                  className="flex-1"
+                  className="flex-1 text-white"
                 >
                   Subir Tarea
                 </Button>

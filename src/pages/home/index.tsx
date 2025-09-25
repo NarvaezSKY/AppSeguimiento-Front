@@ -58,24 +58,35 @@ export default function IndexPage() {
     "info",
   ];
 
-  const stringToIndex = (s: string | undefined, len: number) => {
-    if (!s) return 0;
-    let h = 0;
-    for (let i = 0; i < s.length; i++) {
-      h = (h << 5) - h + s.charCodeAt(i);
-      h |= 0;
-    }
-    return Math.abs(h) % len;
+  // Mapeo directo de colores para evitar problemas con clases dinámicas
+  const colorMap = {
+    success: "text-success bg-success/20",
+    primary: "text-primary bg-primary/20",
+    warning: "text-warning bg-warning/20",
+    danger: "text-danger bg-danger/20",
+    secondary: "text-secondary bg-secondary/20",
+    default: "text-default bg-default/20",
+    info: "text-info bg-info/20",
   };
 
-  const tokenToColor: Record<string, string> = {
-    success: "#16a34a",
-    primary: "#2563eb",
-    warning: "#f59e0b",
-    danger: "#ef4444",
-    secondary: "#6b7280",
-    default: "#111827",
-    info: "#0891b2",
+  // Función hash mejorada para mejor distribución
+  const stringToIndex = (s: string | undefined, len: number) => {
+    if (!s) return 0;
+    let hash = 0;
+    // Usamos una combinación de algoritmos para mejor distribución
+    for (let i = 0; i < s.length; i++) {
+      const char = s.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convertir a 32-bit integer
+    }
+    // Agregamos más entropia usando la longitud del string
+    hash = hash + s.length * 31;
+    return Math.abs(hash) % len;
+  };
+
+  // Alternativa: usar el índice del array directamente para garantizar colores únicos
+  const getColorByIndex = (index: number) => {
+    return colorTokens[index % colorTokens.length];
   };
 
   return (
@@ -84,23 +95,28 @@ export default function IndexPage() {
         <div className="flex justify-between w-full max-w-2xl mb-7 px-4 gap-2">
           <h1 className="text-4xl font-semibold">Componentes</h1>
           <Button
-            color="success"
+            color="primary"
             isLoading={false}
-            className="px-4 py-2"
-            variant="ghost"
+            className="px-4 py-2 text-white"
+            variant="solid"
             onClick={() => setOpenCreate(true)}
           >
             Agregar componente
           </Button>
         </div>
 
-        {components.map((c: any) => {
-          const idx = stringToIndex(
-            c._id ?? c.nombreComponente,
-            colorTokens.length
-          );
-          const token = colorTokens[idx];
-          const color = tokenToColor[token] ?? tokenToColor.default;
+        {components.map((c: any, index) => {
+          // Opción 1: Usar índice del array (garantiza colores únicos secuenciales)
+          const colorToken = getColorByIndex(index);
+          
+          // Opción 2: Usar hash mejorado (mantiene consistencia basada en ID)
+          // const idx = stringToIndex(c._id ?? c.nombreComponente, colorTokens.length);
+          // const colorToken = colorTokens[idx];
+          
+          const colorClasses = colorMap[colorToken as keyof typeof colorMap];
+
+          // Debug: mostrar en consola qué color se asigna
+          console.log(`Componente ${index}: ${c.nombreComponente}, Color: ${colorToken}`);
 
           return (
             <Link
@@ -143,11 +159,10 @@ export default function IndexPage() {
                     </div>
                     <span
                       aria-hidden
-                      title={token}
-                      className="flex items-center justify-center rounded-md w-10 h-10"
-                      style={{ background: `${color}1A` }}
+                      title={`${colorToken} - Index: ${index}`}
+                      className={`flex items-center justify-center rounded-md w-10 h-10 ${colorClasses}`}
                     >
-                      <IoIosFolderOpen size={24} style={{ color }} />
+                      <IoIosFolderOpen size={24} />
                     </span>
                   </div>
                   <h2 className="text-2xl font-semibold mb-0 max-w-xl truncate">

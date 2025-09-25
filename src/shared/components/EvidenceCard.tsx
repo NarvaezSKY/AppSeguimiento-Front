@@ -309,7 +309,7 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
               </Button>
               <Button
                 variant="solid"
-                color="primary"
+                color="success"
                 onClick={handleModalConfirm}
                 disabled={!selectedDate}
               >

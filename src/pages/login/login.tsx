@@ -26,7 +26,7 @@ export default function LoginPage() {
     <DefaultLayout>
       <section className="flex items-center justify-center pt-16">
         <Card className="w-full max-w-md p-6 shadow-lg">
-          <h2 className="text-2xl font-semibold mb-6 text-center text-4xl">¡Bienvenido de vuelta!</h2>
+          <h2 className="font-semibold mb-6 text-center text-4xl">¡Bienvenida de vuelta!</h2>
           <h3 className="text-md text-center text-default-500 mb-4">Inicia sesión para gestionar las evidencias del Plan Operativo</h3>
           <Divider className="mb-4"/>
           <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
