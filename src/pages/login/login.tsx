@@ -62,7 +62,7 @@ export default function LoginPage() {
             {error && (
               <span className="text-red-500 text-sm text-center">{error}</span>
             )}
-            <Button color="success" type="submit" variant="shadow" fullWidth isLoading={isLoading}>
+            <Button color="success" type="submit" variant="shadow" className="text-white" fullWidth isLoading={isLoading}>
               Entrar
             </Button>
           </form>

@@ -52,7 +52,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               isExternal={false}
             >
               <TbSmartHome className="w-5 h-5" />
-              Inicio
+              Componentes
             </Link>
             <Link
               className={`font-semibold text-success hover:text-default-800 underline flex justify-start gap-1 transition-all 

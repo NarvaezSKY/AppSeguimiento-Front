@@ -1,7 +1,10 @@
 export interface IUploadEvidenceRes {
   success: true;
-  // el endpoint a veces devuelve un único objeto o un arreglo — soportamos ambos
   data: IEvidence[];
+  total?: number;
+  page?: number;
+  totalPages?: number;
+  perPage?: number;
 }
 
 export interface IEvidence {
@@ -33,4 +36,5 @@ export interface IEvidence {
   fechaEntrega: string;
   _id: string;
   creadoEn: string;
+
 }

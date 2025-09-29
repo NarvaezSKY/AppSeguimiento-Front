@@ -6,4 +6,7 @@ export interface IGetAllEvidencesReq {
   componente?: string;
   responsable?: string;
   trimestre?: number;
+  justificacion?: string;
+  page?: number;
+  limit?: number;
 }

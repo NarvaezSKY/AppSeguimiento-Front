@@ -43,6 +43,15 @@ export function useUpload() {
     { mes: number | null; trimestre: number | null; fechaEntrega: string | null }[]
   >([{ mes: null, trimestre: null, fechaEntrega: null }]);
 
+  // Función para calcular el trimestre basado en el mes
+  const getTrimestreFromMes = (mes: number): number => {
+    if (mes >= 1 && mes <= 3) return 1;
+    if (mes >= 4 && mes <= 6) return 2;
+    if (mes >= 7 && mes <= 9) return 3;
+    if (mes >= 10 && mes <= 12) return 4;
+    return 1; // fallback
+  };
+
   // helper to compute fechaEntrega (05 of next month), handling year rollover
   const computeFechaEntrega = (mes: number, anio: number) => {
     if (!mes) return "";
@@ -104,13 +113,18 @@ export function useUpload() {
     setEvidenceEntries((prev) => {
       const next = [...prev];
       next[index] = { ...(next[index] ?? { mes: null, trimestre: null, fechaEntrega: null }), mes };
-      // compute fechaEntrega using form year
-      const anioVal = getValues("anio") ?? "2025";
+      
+      // Selección automática del trimestre basado en el mes
       if (mes && Number.isInteger(mes)) {
+        next[index].trimestre = getTrimestreFromMes(mes);
+        // compute fechaEntrega using form year
+        const anioVal = getValues("anio") ?? "2025";
         next[index].fechaEntrega = computeFechaEntrega(mes, Number(anioVal));
       } else {
+        next[index].trimestre = null;
         next[index].fechaEntrega = null;
       }
+      
       return next;
     });
   };

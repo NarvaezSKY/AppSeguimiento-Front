@@ -39,8 +39,11 @@ const getAllEvidences = async (filter?: IGetAllEvidencesReq) => {
             if (filter.componente) params.componente = filter.componente;
             if (filter.responsable) params.responsable = filter.responsable;
             if (filter.trimestre != null) params.trimestre = Number(filter.trimestre);
+            if (filter.justificacion) params.justificacion = filter.justificacion;
+            if (filter.page != null) params.page = Number(filter.page);
+            if (filter.limit != null) params.limit = Number(filter.limit);
         }
-        const response = await axiosInstance.get("/evidencias", { params });
+        const response = await axiosInstance.get(`/evidencias`, { params });
         return response.data;
     } catch (error) {
         console.error("Error during getAllEvidences:", error);

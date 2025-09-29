@@ -69,20 +69,20 @@ export default function IndexPage() {
     info: "text-info bg-info/20",
   };
 
-  // Función hash mejorada para mejor distribución
-  const stringToIndex = (s: string | undefined, len: number) => {
-    if (!s) return 0;
-    let hash = 0;
-    // Usamos una combinación de algoritmos para mejor distribución
-    for (let i = 0; i < s.length; i++) {
-      const char = s.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convertir a 32-bit integer
-    }
-    // Agregamos más entropia usando la longitud del string
-    hash = hash + s.length * 31;
-    return Math.abs(hash) % len;
-  };
+  // // Función hash mejorada para mejor distribución
+  // const stringToIndex = (s: string | undefined, len: number) => {
+  //   if (!s) return 0;
+  //   let hash = 0;
+  //   // Usamos una combinación de algoritmos para mejor distribución
+  //   for (let i = 0; i < s.length; i++) {
+  //     const char = s.charCodeAt(i);
+  //     hash = ((hash << 5) - hash) + char;
+  //     hash = hash & hash; // Convertir a 32-bit integer
+  //   }
+  //   // Agregamos más entropia usando la longitud del string
+  //   hash = hash + s.length * 31;
+  //   return Math.abs(hash) % len;
+  // };
 
   // Alternativa: usar el índice del array directamente para garantizar colores únicos
   const getColorByIndex = (index: number) => {
@@ -109,14 +109,7 @@ export default function IndexPage() {
           // Opción 1: Usar índice del array (garantiza colores únicos secuenciales)
           const colorToken = getColorByIndex(index);
           
-          // Opción 2: Usar hash mejorado (mantiene consistencia basada en ID)
-          // const idx = stringToIndex(c._id ?? c.nombreComponente, colorTokens.length);
-          // const colorToken = colorTokens[idx];
-          
           const colorClasses = colorMap[colorToken as keyof typeof colorMap];
-
-          // Debug: mostrar en consola qué color se asigna
-          console.log(`Componente ${index}: ${c.nombreComponente}, Color: ${colorToken}`);
 
           return (
             <Link

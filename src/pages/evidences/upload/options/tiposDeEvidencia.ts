@@ -5,11 +5,9 @@ export const TIPOS_EVIDENCIA: Option<string>[] = [
 	{ value: "actas", label: "ACTAS" },
 	{ value: "correos_electronicos", label: "Correos electrónicos" },
 	{ value: "informe", label: "Informe" },
-	{ value: "informes", label: "Informes" },
 	{ value: "matriz_informe", label: "Matriz/Informe" },
 	{ value: "planes", label: "Planes" },
 	{ value: "reporte", label: "Reporte" },
-	{ value: "reportes", label: "Reportes" },
 	{ value: "otro", label: "Otro" },
 ];
 

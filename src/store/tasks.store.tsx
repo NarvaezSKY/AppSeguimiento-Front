@@ -10,7 +10,7 @@ import {
   getActividadesByResponsableUseCase,
 } from "@/core/tasks/application";
 import { tasksRepository } from "@/core/tasks/infrastructure/tasks.repository";
-import { IEvidence } from "@/core/tasks/domain/upload-evidence";
+import { IUploadEvidenceRes, IEvidence } from "@/core/tasks/domain/upload-evidence/upload-evidence.res";
 import { IComponents } from "@/core/tasks/domain/get-components/get-components.res";
 import { IGetAllEvidencesReq } from "@/core/tasks/domain/get-evidences";
 import { IActivity } from "@/core/tasks/domain/upload-activity";
@@ -29,6 +29,13 @@ interface TasksState {
   error: string | null;
   lastActivityId?: string | null;
   lastComponentId?: string | null;
+
+  // pagination
+  page: number;
+  limit: number;
+  totalItems: number;
+  totalPages: number;
+
   createComponent: (data: any) => Promise<any>;
   createEvidence: (data: any) => Promise<any>;
   uploadTask: (activityData: any, evidenceData: any) => Promise<any>;
@@ -54,6 +61,12 @@ export const useTasksStore = create<TasksState>((set) => ({
   lastActivityId: null,
   lastComponentId: null,
 
+  // pagination defaults
+  page: 1,
+  limit: 10,
+  totalItems: 0,
+  totalPages: 0,
+  
   createComponent: async (data) => {
     set({ isLoading: true, error: null });
     try {
@@ -228,7 +241,37 @@ export const useTasksStore = create<TasksState>((set) => ({
     try {
       const getAll = getAllEvidencesUseCase(tasksRepository);
       const result = await getAll(filter);
-      set({ isLoading: false, evidences: result.data });
+
+      // Normalizar la respuesta a IUploadEvidenceRes (según ejemplo de API)
+      // API: { success: true, data: { items: [...], total, page, totalPages, perPage } }
+      // repository devuelve response.data (el objeto completo), por eso navegamos result?.data
+      const maybeTop = result as any;
+      // si repository ya devolvió response.data (ej: { success, data: {...} }) -> inner = result.data
+      // si useCase/repository devolviera ya inner -> inner = result
+      const topLayer = maybeTop?.data ?? maybeTop;
+      const inner: IUploadEvidenceRes["data"] | any = topLayer?.data ?? topLayer;
+
+      // items garantizados como IEvidence[]
+      const items: IEvidence[] = Array.isArray(inner?.items)
+        ? inner.items
+        : Array.isArray(inner)
+        ? (inner as IEvidence[])
+        : [];
+
+      const page = Number(inner?.page ?? filter?.page ?? 1);
+      const limit = Number(inner?.perPage ?? inner?.perPage ?? filter?.limit ?? 10);
+      const totalItems = Number(inner?.total ?? 0);
+      const totalPages = Number(inner?.totalPages ?? Math.ceil(totalItems / (limit || 1)) ?? 0);
+
+      set({
+        isLoading: false,
+        evidences: items,
+        page,
+        limit,
+        totalItems,
+        totalPages,
+      });
+
       return result;
     } catch (err: any) {
       set({

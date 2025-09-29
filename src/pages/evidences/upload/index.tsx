@@ -125,7 +125,7 @@ export default function UploadForm() {
                     <div>
                       <DropdownField
                         label={`Trimestre #${idx + 1}`}
-                        placeholder="Selecciona trimestre"
+                        placeholder="Selecciona..."
                         options={trimestres}
                         value={entry.trimestre ?? undefined}
                         onChange={(v) => setEntryTrimestre(idx, v as number)}

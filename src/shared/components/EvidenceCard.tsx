@@ -49,10 +49,12 @@ const getInitials = (nombre: string) => {
 };
 
 const formatDate = (dateString: string) => {
+  if (!dateString) return "";
   return new Date(dateString).toLocaleDateString("es-ES", {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: "UTC",
   });
 };
 
@@ -81,31 +83,51 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
   const [estado, setEstado] = useState(evidence.estado);
   const [entregadoEn, setEntregadoEn] = useState(evidence.entregadoEn ?? null);
 
-  // Modal para seleccionar fecha de entrega
+  // Nuevo estado para justificación (si existe)
+  const [justificacion, setJustificacion] = useState<string | null>(
+    (evidence as any).justificacion ?? null
+  );
+
+  // Modal para seleccionar fecha de entrega o ingresar justificación
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingEstado, setPendingEstado] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedJustificacion, setSelectedJustificacion] = useState<string>("");
 
   // Para evitar doble submit
   const isSubmittingRef = useRef(false);
 
   const handleChangeEstado = async (nuevoEstado: string) => {
+    const s = (nuevoEstado || "").trim().toLowerCase();
     // Si el nuevo estado requiere fecha de entrega, abrir modal
     if (
-      nuevoEstado === "Entregada" ||
-      nuevoEstado === "Entrega Extemporanea" ||
-      nuevoEstado === "Entrega extemporanea"
+      s === "entregada" ||
+      s === "entrega extemporanea" ||
+      s === "entrega extemporánea" // por si acaso
     ) {
       setPendingEstado(nuevoEstado);
       setModalOpen(true);
       setSelectedDate(""); // limpiar fecha previa
       return;
     }
+
+    // Si el nuevo estado es "no logro", abrir modal para justificar
+    if (s === "no logro" || s === "no logro") {
+      setPendingEstado(nuevoEstado);
+      setModalOpen(true);
+      setSelectedJustificacion("");
+      return;
+    }
+
     // Otros estados: actualizar directo
     await doUpdateEstado(nuevoEstado);
   };
 
-  const doUpdateEstado = async (nuevoEstado: string, fechaEntrega?: string) => {
+  const doUpdateEstado = async (
+    nuevoEstado: string,
+    fechaEntrega?: string,
+    justificacionParam?: string
+  ) => {
     setLoading(true);
     setError(null);
     try {
@@ -116,22 +138,29 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
       if (
         (nuevoEstado === "Entregada" ||
           nuevoEstado === "Entrega Extemporanea" ||
-          nuevoEstado === "Entrega extemporanea") &&
+          nuevoEstado === "Entrega extemporanea" ||
+          nuevoEstado === "Entrega Extemporánea") &&
         fechaEntrega
       ) {
         payload.entregadoEn = fechaEntrega;
       }
+      if (justificacionParam) {
+        payload.justificacion = justificacionParam;
+      }
+
       const res = await updateEvidence(payload);
       setEstado(nuevoEstado);
-      // Si la respuesta trae nueva fecha de entrega, actualizarla
+
+      // Si la respuesta trae nueva fecha de entrega o justificación, actualizarla
       if (res?.data && Array.isArray(res.data)) {
-        const updated = res.data.find(
-          (ev: IEvidence) => ev._id === evidence._id
-        );
-        setEntregadoEn(updated?.entregadoEn ?? null);
-      } else if (res?.data && res.data.entregadoEn) {
-        setEntregadoEn(res.data.entregadoEn ?? null);
+        const updated = res.data.find((ev: IEvidence) => ev._id === evidence._id);
+        setEntregadoEn((updated as any)?.entregadoEn ?? null);
+        setJustificacion((updated as any)?.justificacion ?? null);
+      } else if (res?.data) {
+        setEntregadoEn((res.data as any)?.entregadoEn ?? null);
+        setJustificacion((res.data as any)?.justificacion ?? null);
       }
+
       toast.success("Estado actualizado");
       if (typeof getAllEvidences === "function") getAllEvidences();
     } catch (err: any) {
@@ -144,7 +173,20 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
 
   // Confirmar desde el modal
   const handleModalConfirm = async () => {
-    if (!selectedDate || isSubmittingRef.current) return;
+    if (isSubmittingRef.current) return;
+    // Si es justificación
+    if (pendingEstado && pendingEstado.trim().toLowerCase() === "no logro") {
+      if (!selectedJustificacion || selectedJustificacion.trim().length === 0) return;
+      isSubmittingRef.current = true;
+      setModalOpen(false);
+      await doUpdateEstado(pendingEstado, undefined, selectedJustificacion.trim());
+      setPendingEstado(null);
+      setSelectedJustificacion("");
+      return;
+    }
+
+    // Si es fecha
+    if (!selectedDate) return;
     isSubmittingRef.current = true;
     setModalOpen(false);
     await doUpdateEstado(pendingEstado!, selectedDate);
@@ -263,9 +305,14 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
                 <span>Entregada en: {formatDate(entregadoEn as string)}</span>
               </div>
             )}
+            {justificacion && (
+              <div className="text-xs text-default-500 mt-1">
+                <span>Justificación: {justificacion}</span>
+              </div>
+            )}
           </div>
 
-          <Dropdown isDisabled={evidence.estado === "Entregada"}>
+          <Dropdown isDisabled={evidence.estado === "Entregada" || evidence.estado === "No logro"}>
             <DropdownTrigger>
               <Button variant="bordered" isLoading={loading} disabled={loading}>
                 Cambiar estado
@@ -286,14 +333,19 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
         </div>
         {error && <div className="text-xs text-red-500 mt-2">{error}</div>}
 
-        {/* Modal para seleccionar fecha de entrega */}
+        {/* Modal para seleccionar fecha de entrega o ingresar justificación */}
         <Modal
           open={modalOpen}
-          title="Selecciona la fecha de entrega"
+          title={
+            pendingEstado && pendingEstado.trim().toLowerCase() === "no logro"
+              ? "Ingrese la justificación"
+              : "Selecciona la fecha de entrega"
+          }
           onClose={() => {
             setModalOpen(false);
             setPendingEstado(null);
             setSelectedDate("");
+            setSelectedJustificacion("");
           }}
           footer={
             <div className="flex gap-2 justify-end">
@@ -303,6 +355,7 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
                   setModalOpen(false);
                   setPendingEstado(null);
                   setSelectedDate("");
+                  setSelectedJustificacion("");
                 }}
               >
                 Cancelar
@@ -311,7 +364,13 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
                 variant="solid"
                 color="success"
                 onClick={handleModalConfirm}
-                disabled={!selectedDate}
+                disabled={
+                  // deshabilitar si no hay fecha o justificación según el caso
+                  pendingEstado &&
+                  pendingEstado.trim().toLowerCase() === "no logro"
+                    ? selectedJustificacion.trim().length === 0
+                    : !selectedDate
+                }
               >
                 Aceptar
               </Button>
@@ -319,19 +378,43 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
           }
         >
           <div className="flex flex-col gap-4">
-            <label className="text-sm font-medium">
-              Fecha de entrega
-              <input
-                type="date"
-                className="mt-2 border rounded px-3 py-2"
-                max={maxDate}
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              />
-            </label>
-            <span className="text-xs text-default-500">
-              No puedes seleccionar una fecha futura.
-            </span>
+            {pendingEstado && pendingEstado.trim().toLowerCase() === "no logro" ? (
+              <label className="text-sm font-medium">
+                <span className="text-default-500 mr-2">
+                  Justificación (máx. 300 caracteres)
+                </span>
+                <textarea
+                  className="mt-2 border rounded px-3 py-2 w-full resize-y"
+                  maxLength={300}
+                  rows={5}
+                  value={selectedJustificacion}
+                  onChange={(e) => setSelectedJustificacion(e.target.value)}
+                />
+                <div className="text-xs text-default-400 mt-1">
+                  {selectedJustificacion.length} / 300
+                </div>
+              </label>
+            ) : (
+              <label className="text-sm font-medium">
+                <span className="text-default-500 mr-2">Fecha de entrega</span>
+                <input
+                  type="date"
+                  className="mt-2 border rounded px-3 py-2"
+                  max={maxDate}
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                />
+              </label>
+            )}
+            {pendingEstado && pendingEstado.trim().toLowerCase() === "no logro" ? (
+              <span className="text-xs text-default-500">
+                Debes ingresar la justificación para registrar "No logro".
+              </span>
+            ) : (
+              <span className="text-xs text-default-500">
+                No puedes seleccionar una fecha futura.
+              </span>
+            )}
           </div>
         </Modal>
       </CardBody>
