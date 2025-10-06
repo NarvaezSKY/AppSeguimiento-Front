@@ -48,9 +48,13 @@ interface TasksState {
   setLastComponentId: (componentId: string) => void;
   clearLastComponentId: () => void;
   getActividadesByResponsable: (responsableId: string) => Promise<any>;
+
+  updatingEvidenceIds?: string[]; // NUEVO: ids en actualización
+  // helper para hacer patch
+  patchEvidenceInStore?: (evidence: IEvidence) => void;
 }
 
-export const useTasksStore = create<TasksState>((set) => ({
+export const useTasksStore = create<TasksState>((set, get) => ({
   isLoading: false,
   isUploadingActivity: false,
   isUploadingEvidence: false,
@@ -66,7 +70,8 @@ export const useTasksStore = create<TasksState>((set) => ({
   limit: 10,
   totalItems: 0,
   totalPages: 0,
-  
+  updatingEvidenceIds: [],
+
   createComponent: async (data) => {
     set({ isLoading: true, error: null });
     try {
@@ -127,21 +132,60 @@ export const useTasksStore = create<TasksState>((set) => ({
     }
   },
 
+  patchEvidenceInStore: (evidence: IEvidence) => {
+    set((state) => {
+      if (!state.evidences || state.evidences.length === 0) return {};
+      return {
+        evidences: state.evidences.map((ev) =>
+          ev._id === evidence._id ? { ...ev, ...evidence } : ev
+        ),
+      };
+    });
+  },
   updateEvidence: async (data) => {
-    set({ isLoading: true, error: null });
+    const id = data.id || data._id;
+    // No tocar isLoading global para no romper vistas/filtros
+    set((state) => ({
+      error: null,
+      updatingEvidenceIds: [...(state.updatingEvidenceIds || []), id],
+    }));
     try {
       const updateEvidence = updateEvidenceUseCase(tasksRepository);
       const result = await updateEvidence(data);
-      set({ isLoading: false, error: null });
+
+      // Normalizar posibles formas de respuesta
+      const raw = (result as any)?.data ?? result;
+      // Posibles ubicaciones de la/las evidencias actualizadas
+      const candidates: any[] = [];
+      if (Array.isArray(raw)) candidates.push(...raw);
+      else if (Array.isArray(raw?.data)) candidates.push(...raw.data);
+      else if (Array.isArray(raw?.items)) candidates.push(...raw.items);
+      else if (raw?.data?.items && Array.isArray(raw.data.items))
+        candidates.push(...raw.data.items);
+      else if (raw?._id) candidates.push(raw);
+      else if (raw?.data?._id) candidates.push(raw.data);
+
+      // Patch de cada evidencia encontrada
+      candidates.forEach((ev) => {
+        if (ev && ev._id) get().patchEvidenceInStore?.(ev as IEvidence);
+      });
+
+      set((state) => ({
+        updatingEvidenceIds: (state.updatingEvidenceIds || []).filter(
+          (x) => x !== id
+        ),
+      }));
       return result;
     } catch (err: any) {
-      set({
-        isLoading: false,
+      set((state) => ({
+        updatingEvidenceIds: (state.updatingEvidenceIds || []).filter(
+          (x) => x !== id
+        ),
         error:
           err?.response?.data?.message ||
           err?.message ||
           "Error al actualizar evidencia",
-      });
+      }));
       throw err;
     }
   },

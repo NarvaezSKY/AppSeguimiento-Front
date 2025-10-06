@@ -77,25 +77,26 @@ const getMonthName = (mes: number) => {
 };
 
 export function EvidenceCard({ evidence }: EvidenceCardProps) {
-  const { updateEvidence, getAllEvidences } = useTasksStore();
-  const [loading, setLoading] = useState(false);
+  const { updateEvidence, updatingEvidenceIds } = useTasksStore();
+  // Eliminamos getAllEvidences del destructuring
+  // const { updateEvidence, getAllEvidences } = useTasksStore();  // <-- quitar
+
   const [error, setError] = useState<string | null>(null);
   const [estado, setEstado] = useState(evidence.estado);
   const [entregadoEn, setEntregadoEn] = useState(evidence.entregadoEn ?? null);
-
-  // Nuevo estado para justificación (si existe)
   const [justificacion, setJustificacion] = useState<string | null>(
     (evidence as any).justificacion ?? null
   );
 
-  // Modal para seleccionar fecha de entrega o ingresar justificación
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingEstado, setPendingEstado] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedJustificacion, setSelectedJustificacion] = useState<string>("");
 
-  // Para evitar doble submit
   const isSubmittingRef = useRef(false);
+
+  // NUEVO: loading derivado del store por id
+  const loading = (updatingEvidenceIds || []).includes(evidence._id);
 
   const handleChangeEstado = async (nuevoEstado: string) => {
     const s = (nuevoEstado || "").trim().toLowerCase();
@@ -128,45 +129,39 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
     fechaEntrega?: string,
     justificacionParam?: string
   ) => {
-    setLoading(true);
     setError(null);
     try {
       const payload: any = {
         id: evidence._id,
-        estado: nuevoEstado,
+        estado: normalizarEstado(nuevoEstado),
       };
+
       if (
-        (nuevoEstado === "Entregada" ||
-          nuevoEstado === "Entrega Extemporanea" ||
-          nuevoEstado === "Entrega extemporanea" ||
-          nuevoEstado === "Entrega Extemporánea") &&
+        requiereFecha(payload.estado) &&
         fechaEntrega
       ) {
         payload.entregadoEn = fechaEntrega;
       }
+
       if (justificacionParam) {
         payload.justificacion = justificacionParam;
       }
 
-      const res = await updateEvidence(payload);
-      setEstado(nuevoEstado);
+      await updateEvidence(payload);
 
-      // Si la respuesta trae nueva fecha de entrega o justificación, actualizarla
-      if (res?.data && Array.isArray(res.data)) {
-        const updated = res.data.find((ev: IEvidence) => ev._id === evidence._id);
-        setEntregadoEn((updated as any)?.entregadoEn ?? null);
-        setJustificacion((updated as any)?.justificacion ?? null);
-      } else if (res?.data) {
-        setEntregadoEn((res.data as any)?.entregadoEn ?? null);
-        setJustificacion((res.data as any)?.justificacion ?? null);
-      }
+      // Actualización visual inmediata (optimistic already patched en store)
+      setEstado(payload.estado);
+      if (payload.entregadoEn) setEntregadoEn(payload.entregadoEn);
+      else if (!requiereFecha(payload.estado)) setEntregadoEn(null);
+
+      if (payload.justificacion) setJustificacion(payload.justificacion);
+      else if (!requiereJustificacion(payload.estado)) setJustificacion(null);
 
       toast.success("Estado actualizado");
-      if (typeof getAllEvidences === "function") getAllEvidences();
+      // Eliminado: getAllEvidences();  (evita perder filtros)
     } catch (err: any) {
       setError(err?.message || "Error al actualizar estado");
     } finally {
-      setLoading(false);
       isSubmittingRef.current = false;
     }
   };
@@ -408,7 +403,7 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             )}
             {pendingEstado && pendingEstado.trim().toLowerCase() === "no logro" ? (
               <span className="text-xs text-default-500">
-                Debes ingresar la justificación para registrar "No logro".
+                Debes ingresar la justificación para registrar No logro.
               </span>
             ) : (
               <span className="text-xs text-default-500">
@@ -420,4 +415,24 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
       </CardBody>
     </Card>
   );
+}
+
+function normalizarEstado(s: string) {
+  const t = s.trim().toLowerCase();
+  if (t === "entrega extemporanea" || t === "entrega extemporánea")
+    return "Entrega Extemporanea";
+  if (t === "no logro") return "No logro";
+  if (t === "entregada") return "Entregada";
+  if (t === "por entregar") return "Por Entregar";
+  if (t === "entrega futura") return "Entrega Futura";
+  return s;
+}
+
+function requiereFecha(est: string) {
+  const e = est.toLowerCase();
+  return e === "entregada" || e === "entrega extemporanea" || e === "entrega extemporánea";
+}
+
+function requiereJustificacion(est: string) {
+  return est.trim().toLowerCase() === "no logro";
 }
