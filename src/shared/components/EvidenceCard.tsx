@@ -131,15 +131,20 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
   ) => {
     setError(null);
     try {
+      const rawEstado = normalizarEstado(nuevoEstado);
+
+      // Ajuste local inteligente (solo visual) para entregas
+      const estadoFinal =
+        requiereFecha(rawEstado) && fechaEntrega
+          ? computeEntregaEstado(rawEstado, fechaEntrega, evidence.fechaEntrega)
+          : rawEstado;
+
       const payload: any = {
         id: evidence._id,
-        estado: normalizarEstado(nuevoEstado),
+        estado: estadoFinal,
       };
 
-      if (
-        requiereFecha(payload.estado) &&
-        fechaEntrega
-      ) {
+      if (requiereFecha(estadoFinal) && fechaEntrega) {
         payload.entregadoEn = fechaEntrega;
       }
 
@@ -149,7 +154,7 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
 
       await updateEvidence(payload);
 
-      // Actualización visual inmediata (optimistic already patched en store)
+      // Actualización visual inmediata
       setEstado(payload.estado);
       if (payload.entregadoEn) setEntregadoEn(payload.entregadoEn);
       else if (!requiereFecha(payload.estado)) setEntregadoEn(null);
@@ -158,7 +163,6 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
       else if (!requiereJustificacion(payload.estado)) setJustificacion(null);
 
       toast.success("Estado actualizado");
-      // Eliminado: getAllEvidences();  (evita perder filtros)
     } catch (err: any) {
       setError(err?.message || "Error al actualizar estado");
     } finally {
@@ -307,7 +311,7 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             )}
           </div>
 
-          <Dropdown isDisabled={evidence.estado === "Entregada" || evidence.estado === "No logro"}>
+          <Dropdown >
             <DropdownTrigger>
               <Button variant="bordered" isLoading={loading} disabled={loading}>
                 Cambiar estado
@@ -435,4 +439,33 @@ function requiereFecha(est: string) {
 
 function requiereJustificacion(est: string) {
   return est.trim().toLowerCase() === "no logro";
+}
+
+// NUEVO: decidir visualmente si es Entregada o Entrega Extemporanea según la fecha
+function computeEntregaEstado(
+  estadoSeleccionado: string,
+  fechaEntregada: string | undefined,
+  fechaLimite: string | undefined
+) {
+  if (
+    !fechaEntregada ||
+    !fechaLimite ||
+    !(
+      estadoSeleccionado === "Entregada" ||
+      estadoSeleccionado === "Entrega Extemporanea"
+    )
+  )
+    return estadoSeleccionado;
+
+  const delivered = new Date(fechaEntregada);
+  const due = new Date(fechaLimite);
+  if (isNaN(delivered.getTime()) || isNaN(due.getTime()))
+    return estadoSeleccionado;
+
+  // Comparar solo por día
+  delivered.setHours(0, 0, 0, 0);
+  due.setHours(0, 0, 0, 0);
+
+  if (delivered.getTime() > due.getTime()) return "Entrega Extemporanea";
+  return "Entregada";
 }
