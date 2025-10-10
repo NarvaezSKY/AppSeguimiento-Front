@@ -5,6 +5,7 @@ import { IUploadEvidenceReq } from "../domain/upload-evidence";
 import { IGetAllEvidencesReq } from "../domain/get-evidences";
 import { IUploadActivityReq } from "../domain/upload-activity";
 import { IUpdateEvidenceReq } from "../domain/update-evidence";
+import { IGetActividadesByResponsableReq } from "../domain/get-actividades-by-responsable";
 
 const uploadComponent = async (data: IUploadComponentReq) => {
     try {
@@ -91,9 +92,23 @@ const getUsersByComponent = async (componentId: string) => {
     }
 }
 
-const getActividadesByResponsable = async (responsableId: string) => {
+const getActividadesByResponsable = async (data: IGetActividadesByResponsableReq) => {
     try {
-        const response = await axiosInstance.get(`/actividades/responsable/${responsableId}`);
+        const response = await axiosInstance.get(`/actividades/responsable/${data.responsableId}`, {
+            params: {
+                idComponente: data.componenteId
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error during register:", error);
+        throw error;
+    }
+}
+
+const getComponentsByResponsable = async (userId: string) => {
+    try {
+        const response = await axiosInstance.get(`/componentes/by-user/${userId}`);
         return response.data;
     } catch (error) {
         console.error("Error during register:", error);
@@ -109,5 +124,6 @@ export const tasksRepository: ITasksRepository = {
     getUniqueComponents,
     uploadActivity,
     updateEvidence,
-    getActividadesByResponsable
+    getActividadesByResponsable,
+    getComponentsByResponsable
 };

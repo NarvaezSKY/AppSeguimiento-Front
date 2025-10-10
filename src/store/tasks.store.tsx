@@ -8,14 +8,20 @@ import {
   updateEvidenceUseCase,
   getUsersByComponentUseCase,
   getActividadesByResponsableUseCase,
+  getComponentsByResponsableUseCase,
 } from "@/core/tasks/application";
 import { tasksRepository } from "@/core/tasks/infrastructure/tasks.repository";
-import { IUploadEvidenceRes, IEvidence } from "@/core/tasks/domain/upload-evidence/upload-evidence.res";
+import {
+  IUploadEvidenceRes,
+  IEvidence,
+} from "@/core/tasks/domain/upload-evidence/upload-evidence.res";
 import { IComponents } from "@/core/tasks/domain/get-components/get-components.res";
 import { IGetAllEvidencesReq } from "@/core/tasks/domain/get-evidences";
+
 import { IActivity } from "@/core/tasks/domain/upload-activity";
 import { User } from "@/core/users/domain/get-all-users";
 import { IActivityRes } from "@/core/tasks/domain/get-actividades-by-responsable";
+import { IGetActividadesByResponsableReq } from '../core/tasks/domain/get-actividades-by-responsable/actividades-by-responsable.req';
 
 interface TasksState {
   isLoading: boolean;
@@ -29,8 +35,8 @@ interface TasksState {
   error: string | null;
   lastActivityId?: string | null;
   lastComponentId?: string | null;
+  userComponents: IComponents[];
 
-  // pagination
   page: number;
   limit: number;
   totalItems: number;
@@ -47,10 +53,11 @@ interface TasksState {
   getUsersByComponent: (componentId: string) => Promise<any>;
   setLastComponentId: (componentId: string) => void;
   clearLastComponentId: () => void;
-  getActividadesByResponsable: (responsableId: string) => Promise<any>;
+  getActividadesByResponsable: (data: IGetActividadesByResponsableReq) => Promise<any>;
+  getComponentsByResponsable: (responsableId: string) => Promise<any>;
 
-  updatingEvidenceIds?: string[]; // NUEVO: ids en actualización
-  // helper para hacer patch
+  updatingEvidenceIds?: string[];
+
   patchEvidenceInStore?: (evidence: IEvidence) => void;
 }
 
@@ -64,8 +71,8 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   activities: [],
   lastActivityId: null,
   lastComponentId: null,
+  userComponents: [],
 
-  // pagination defaults
   page: 1,
   limit: 10,
   totalItems: 0,
@@ -90,12 +97,32 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       throw err;
     }
   },
-
-  getActividadesByResponsable: async (responsableId: string) => {
+  getComponentsByResponsable: async (responsableId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const getActividadesByResponsable = getActividadesByResponsableUseCase(tasksRepository);
-      const result = await getActividadesByResponsable(responsableId);
+      const getComponentsByResponsable =
+        getComponentsByResponsableUseCase(tasksRepository);
+      const result = await getComponentsByResponsable(responsableId);
+      set({ isLoading: false, error: null, userComponents: result.data });
+      return result;
+    } catch (err: any) {
+      set({
+        isLoading: false,
+        error:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Error al obtener componentes",
+      });
+      throw err;
+    }
+  },
+
+  getActividadesByResponsable: async (data: IGetActividadesByResponsableReq) => {
+    set({ isLoading: true, error: null });
+    try {
+      const getActividadesByResponsable =
+        getActividadesByResponsableUseCase(tasksRepository);
+      const result = await getActividadesByResponsable(data);
       set({ isLoading: false, error: null, activitiesInProfile: result.data });
       return result;
     } catch (err: any) {
@@ -110,7 +137,8 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     }
   },
 
-  setLastComponentId: (componentId: string) => set({ lastComponentId: componentId }),
+  setLastComponentId: (componentId: string) =>
+    set({ lastComponentId: componentId }),
   clearLastComponentId: () => set({ lastComponentId: null }),
 
   getUsersByComponent: async (componentId: string) => {
@@ -144,7 +172,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   },
   updateEvidence: async (data) => {
     const id = data.id || data._id;
-    // No tocar isLoading global para no romper vistas/filtros
+
     set((state) => ({
       error: null,
       updatingEvidenceIds: [...(state.updatingEvidenceIds || []), id],
@@ -153,9 +181,8 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       const updateEvidence = updateEvidenceUseCase(tasksRepository);
       const result = await updateEvidence(data);
 
-      // Normalizar posibles formas de respuesta
       const raw = (result as any)?.data ?? result;
-      // Posibles ubicaciones de la/las evidencias actualizadas
+
       const candidates: any[] = [];
       if (Array.isArray(raw)) candidates.push(...raw);
       else if (Array.isArray(raw?.data)) candidates.push(...raw.data);
@@ -165,7 +192,6 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       else if (raw?._id) candidates.push(raw);
       else if (raw?.data?._id) candidates.push(raw.data);
 
-      // Patch de cada evidencia encontrada
       candidates.forEach((ev) => {
         if (ev && ev._id) get().patchEvidenceInStore?.(ev as IEvidence);
       });
@@ -209,10 +235,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     }
   },
 
-  // Upload both activity then evidence using the created activity id.
   uploadTask: async (activityData, evidenceData) => {
-    // activityData: { componente, actividad, metaAnual }
-    // evidenceData: either a single payload or an array of payloads
     set({
       isLoading: true,
       error: null,
@@ -222,7 +245,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     try {
       const uploadActivity = uploadActivityUseCase(tasksRepository);
       const activityResult = await uploadActivity(activityData);
-      // try to resolve created activity id from common shapes
+
       const ar: any = activityResult as any;
       const activityId =
         ar?.data?._id || ar?.data?.id || ar?._id || ar?.id || null;
@@ -235,8 +258,10 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       const createEvidence = uploadEvidenceUseCase(tasksRepository);
 
       if (Array.isArray(evidenceData)) {
-        // create all evidences (in parallel)
-        const payloads = evidenceData.map((p) => ({ ...p, actividad: activityId }));
+        const payloads = evidenceData.map((p) => ({
+          ...p,
+          actividad: activityId,
+        }));
         const promises = payloads.map((pl) => createEvidence(pl));
         const results = await Promise.all(promises);
         set({ isUploadingEvidence: false, isLoading: false });
@@ -286,26 +311,26 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       const getAll = getAllEvidencesUseCase(tasksRepository);
       const result = await getAll(filter);
 
-      // Normalizar la respuesta a IUploadEvidenceRes (según ejemplo de API)
-      // API: { success: true, data: { items: [...], total, page, totalPages, perPage } }
-      // repository devuelve response.data (el objeto completo), por eso navegamos result?.data
       const maybeTop = result as any;
-      // si repository ya devolvió response.data (ej: { success, data: {...} }) -> inner = result.data
-      // si useCase/repository devolviera ya inner -> inner = result
-      const topLayer = maybeTop?.data ?? maybeTop;
-      const inner: IUploadEvidenceRes["data"] | any = topLayer?.data ?? topLayer;
 
-      // items garantizados como IEvidence[]
+      const topLayer = maybeTop?.data ?? maybeTop;
+      const inner: IUploadEvidenceRes["data"] | any =
+        topLayer?.data ?? topLayer;
+
       const items: IEvidence[] = Array.isArray(inner?.items)
         ? inner.items
         : Array.isArray(inner)
-        ? (inner as IEvidence[])
-        : [];
+          ? (inner as IEvidence[])
+          : [];
 
       const page = Number(inner?.page ?? filter?.page ?? 1);
-      const limit = Number(inner?.perPage ?? inner?.perPage ?? filter?.limit ?? 10);
+      const limit = Number(
+        inner?.perPage ?? inner?.perPage ?? filter?.limit ?? 10
+      );
       const totalItems = Number(inner?.total ?? 0);
-      const totalPages = Number(inner?.totalPages ?? Math.ceil(totalItems / (limit || 1)) ?? 0);
+      const totalPages = Number(
+        inner?.totalPages ?? Math.ceil(totalItems / (limit || 1)) ?? 0
+      );
 
       set({
         isLoading: false,

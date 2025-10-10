@@ -6,6 +6,7 @@ import { IUploadActivityReq, IUploadActivityRes } from "./upload-activity";
 import { IUploadComponentReq, IUploadComponentRes } from "./upload-component";
 import { IUploadEvidenceReq, IUploadEvidenceRes } from "./upload-evidence";
 import { IGetActividadesByResponsableRes } from "./get-actividades-by-responsable";
+import { IGetActividadesByResponsableReq } from './get-actividades-by-responsable/actividades-by-responsable.req';
 
 export interface ITasksRepository {
     uploadComponent: (data: IUploadComponentReq) => Promise<IUploadComponentRes>;
@@ -15,6 +16,7 @@ export interface ITasksRepository {
     getUniqueComponents: () => Promise<IGetComponentsRes>;
     updateEvidence: (data: IUpdateEvidenceReq) => Promise<IUploadEvidenceRes>;
     getUsersByComponent: (componentId: string) => Promise<IGetAllUsersRes>;
-    getActividadesByResponsable: (responsableId: string) => Promise<IGetActividadesByResponsableRes>;
+    getActividadesByResponsable: (data: IGetActividadesByResponsableReq) => Promise<IGetActividadesByResponsableRes>;
+    getComponentsByResponsable: (userId: string) => Promise<IGetComponentsRes>;
 
 }

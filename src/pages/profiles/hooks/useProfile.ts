@@ -13,8 +13,8 @@ export default function useProfile(userId: string | null) {
     getAllEvidences,
     isLoading,
     lastComponentId,
-    components,
-    getComponents,
+    userComponents,
+    getComponentsByResponsable,
     getActividadesByResponsable,
     activitiesInProfile,
   } = useTasksStore();
@@ -42,14 +42,37 @@ export default function useProfile(userId: string | null) {
     setManualComponentSelection(true);
   };
 
+  // Nuevo useEffect para resetear filtros cuando cambia el userId
   useEffect(() => {
-    getComponents?.().catch(() => {});
-  }, [getComponents]);
+    if (userId) {
+      setSelectedEstado(null);
+      setSelectedTrimestre(null);
+      setSelectedActivityId(null);
+      setSelectedComponentId(null);
+      setManualComponentSelection(false);
+    }
+  }, [userId]);
 
   useEffect(() => {
     if (!userId) return;
-    getActividadesByResponsable?.(userId).catch(() => {});
-  }, [userId, getActividadesByResponsable]);
+    getComponentsByResponsable?.(userId).catch(() => { });
+  }, [userId, getComponentsByResponsable]);
+
+  // Nuevo useEffect para obtener actividades cuando cambie el componente seleccionado
+  useEffect(() => {
+    if (!userId) return;
+
+    const effectiveComponentId = manualComponentSelection || selectedComponentId
+      ? selectedComponentId
+      : (lastComponentId ?? null);
+
+    const requestData = {
+      responsableId: userId,
+      ...(effectiveComponentId && { componenteId: effectiveComponentId })
+    };
+
+    getActividadesByResponsable?.(requestData).catch(() => { });
+  }, [userId, selectedComponentId, manualComponentSelection, lastComponentId, getActividadesByResponsable]);
 
   useEffect(() => {
     if (!selectedActivityId) return;
@@ -60,6 +83,7 @@ export default function useProfile(userId: string | null) {
   useEffect(() => {
     if (!users || users.length === 0) getAllUsers?.();
 
+    // Usar userComponents en lugar de components para el componente efectivo
     const effectiveComponentId =
       manualComponentSelection || selectedComponentId
         ? selectedComponentId
@@ -74,7 +98,7 @@ export default function useProfile(userId: string | null) {
 
     if (selectedActivityId) query.actividad = selectedActivityId;
 
-    getAllEvidences?.(query).catch(() => {});
+    getAllEvidences?.(query).catch(() => { });
   }, [
     userId,
     selectedEstado,
@@ -104,7 +128,8 @@ export default function useProfile(userId: string | null) {
       ? selectedComponentId
       : (lastComponentId ?? null);
 
-  const effectiveComponent = (components ?? []).find(
+  // Cambiar para usar userComponents en lugar de components
+  const effectiveComponent = (userComponents ?? []).find(
     (c: any) => c._id === effectiveComponentId
   );
   const effectiveComponentLabel = effectiveComponent
@@ -119,7 +144,8 @@ export default function useProfile(userId: string | null) {
     : "Todas las actividades";
 
   const activityOptions = mapActivitiesToOptions(activitiesInProfile ?? [], 80);
-  const componentOptions = mapComponentsToOptions(components ?? [], 50);
+  // Cambiar para usar userComponents en lugar de components
+  const componentOptions = mapComponentsToOptions(userComponents ?? [], 50);
 
   return {
     user,
