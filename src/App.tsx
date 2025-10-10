@@ -19,14 +19,19 @@ function App() {
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
-    if (token) {
-      getAllUsers();
-      verify().catch(() => {
-        sessionStorage.removeItem("token");
-        useAuthStore.getState().logout();
-      });
-    }
-  }, [verify]);
+    if (!token) return;
+
+    // call stable store methods via getState(), so deps can be []
+    const { verify } = useAuthStore.getState();
+    verify().catch(() => {
+      sessionStorage.removeItem("token");
+      useAuthStore.getState().logout();
+    });
+
+    // load users only once per session (persisted across refresh)
+    const { getAllUsersIfNeeded } = useUsersStore.getState() as any;
+    getAllUsersIfNeeded?.();
+  }, []); // <-- run once on mount
 
   return (
     <Routes>
