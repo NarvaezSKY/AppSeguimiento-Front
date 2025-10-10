@@ -14,8 +14,8 @@ import { UsersByComponent } from "./pages/usersByComponent";
 import { PowerBIReport } from "./pages/PowerBI";
 
 function App() {
-  const { verify } = useAuthStore();
-  const { getAllUsers } = useUsersStore();
+  // const { verify } = useAuthStore();
+  // const { getAllUsers } = useUsersStore();
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
