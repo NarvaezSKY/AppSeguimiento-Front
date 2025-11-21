@@ -16,6 +16,10 @@ import {
 import EstadoGraphics from "./Components/estadoGraphics";
 import { Divider } from "@heroui/react";
 import useProfile from "./hooks/useProfile";
+import pfpEdith from '../../assets/profiles/Edith.png'
+import pfpJuian from '../../assets/profiles/Inge Julian.png'
+import pfpRodrigo from '../../assets/profiles/Rodrigo.png'
+import pfpDiego from '../../assets/profiles/Diego.png'
 
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -54,9 +58,23 @@ export default function ProfilePage() {
         {/* Datos del usuario */}
         <Card className="w-full">
           <CardHeader className="flex items-center gap-4">
-            <Avatar name={user.nombre} size="lg" />
+            {user.nombre === "Edith Betancourt Sánchez" && (
+              <img src={pfpEdith} alt="Edith Betancourt" className="w-32 h-32 rounded-full object-cover border-4 border-secondary" />
+            )}
+            {user.nombre === "Julián Andrés Garcés Muñoz" && (
+              <img src={pfpJuian} alt="Julián Andrés Garcés" className="w-32 h-32 rounded-full object-cover border-4 border-secondary" />
+            )}
+            {user.nombre === "Rodrigo Alberto Montaño Fuentes" && (
+              <img src={pfpRodrigo} alt="Rodrigo Alberto Montaño" className="w-32 h-32 rounded-full object-cover border-4 border-secondary" />
+            )}
+            {user.nombre === "Diego Arley Arias Guzman" && (
+              <img src={pfpDiego} alt="Diego Arley Arias Guzman" className="w-32 h-32 rounded-full object-cover border-4 border-secondary" />
+            )}
+            {user.nombre !== "Edith Betancourt Sánchez" && user.nombre !== "Julián Andrés Garcés Muñoz" && user.nombre !== "Rodrigo Alberto Montaño Fuentes" && user.nombre !== "Diego Arley Arias Guzman" && (
+              <Avatar name={user.nombre} size="lg" />
+            )}
             <div>
-              <h2 className="text-2xl font-bold">{user.nombre}</h2>
+              <h2 className="text-3xl font-bold">{user.nombre}</h2>
               <div className="flex items-center gap-2 mt-1">
                 <Chip color="primary" className="text-white" size="sm">
                   {user.vinculacion}

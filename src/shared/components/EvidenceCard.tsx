@@ -17,6 +17,10 @@ import { useTasksStore } from "@/store/tasks.store";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import Modal from "./Modal";
+import pfpEdith from '../../assets/profiles/Edith.png';
+import pfpJuian from '../../assets/profiles/Inge Julian.png';
+import pfpRodrigo from '../../assets/profiles/Rodrigo.png';
+import pfpDiego from '../../assets/profiles/Diego.png';
 
 interface EvidenceCardProps {
   evidence: IEvidence;
@@ -275,11 +279,37 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
                 key={responsable._id}
                 className="flex items-center gap-2 bg-default-100 rounded-lg px-3 py-2"
               >
-                <Avatar
-                  size="sm"
-                  name={getInitials(responsable.nombre)}
-                  className="text-xs"
-                />
+                {responsable.nombre === "Edith Betancourt Sánchez" ? (
+                  <img 
+                    src={pfpEdith} 
+                    alt="Edith Betancourt" 
+                    className="w-8 h-8 rounded-full object-cover" 
+                  />
+                ) : responsable.nombre === "Julián Andrés Garcés Muñoz" ? (
+                  <img 
+                    src={pfpJuian} 
+                    alt="Julián Andrés Garcés" 
+                    className="w-8 h-8 rounded-full object-cover" 
+                  />
+                ) : responsable.nombre === "Rodrigo Alberto Montaño Fuentes" ? (
+                  <img 
+                    src={pfpRodrigo} 
+                    alt="Rodrigo Alberto Montaño" 
+                    className="w-8 h-8 rounded-full object-cover" 
+                  />
+                ) :responsable.nombre === "Diego Arley Arias Guzman" ? (
+                  <img 
+                    src={pfpDiego} 
+                    alt="Rodrigo Alberto Montaño" 
+                    className="w-8 h-8 rounded-full object-cover" 
+                  />
+                ):(
+                  <Avatar
+                    size="sm"
+                    name={getInitials(responsable.nombre)}
+                    className="text-xs"
+                  />
+                )}
                 <div className="flex flex-col">
                   <span className="text-xs font-medium">
                     {responsable.nombre}
