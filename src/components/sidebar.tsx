@@ -18,7 +18,7 @@ import { PiSignOutBold } from "react-icons/pi";
 import { useAuthStore } from "../store/auth.store";
 import { toast } from "sonner";
 import { Divider } from "@heroui/react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useUsersStore } from "@/store/users.store";
 import { useTasksStore } from "@/store/tasks.store";
 
@@ -33,9 +33,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { logout } = useAuthStore();
   const { users } = useUsersStore();
   const { clearLastComponentId } = useTasksStore();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
+    navigate("/login");
     toast.success("Sesión cerrada correctamente");
   };
   return (

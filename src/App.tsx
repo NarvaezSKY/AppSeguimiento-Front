@@ -1,21 +1,19 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 
 import IndexPage from "@/pages/evidences/index";
 import LoginPage from "./pages/login/login";
 import ProtectedRoute from "./ProtectedRoute";
 import HomePage from "./pages/home";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useAuthStore } from "./store/auth.store";
 import { PublicRoute } from "./PublicRoute";
-import { useUsersStore } from "./store/users.store";
 import UploadForm from "./pages/evidences/upload";
 import ProfilePage from "./pages/profiles";
 import { UsersByComponent } from "./pages/usersByComponent";
 import { PowerBIReport } from "./pages/PowerBI";
 
 function App() {
-  // const { verify } = useAuthStore();
-  // const { getAllUsers } = useUsersStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -26,86 +24,87 @@ function App() {
     verify().catch(() => {
       sessionStorage.removeItem("token");
       useAuthStore.getState().logout();
+      navigate('/login', { replace: true });
     });
 
-    // load users only once per session (persisted across refresh)
-    const { getAllUsersIfNeeded } = useUsersStore.getState() as any;
-    getAllUsersIfNeeded?.();
+    // Remove the user fetching from here - it should happen on login
   }, []); // <-- run once on mount
 
   return (
-    <Routes>
-      <Route
-        element={
-          <PublicRoute>
-            <LoginPage />
-          </PublicRoute>
-        }
-        path="/login"
-      />
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Cargando...</div>}>
+      <Routes>
+        <Route
+          element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          }
+          path="/login"
+        />
 
-      <Route
-        element={
-          <ProtectedRoute>
-            <UsersByComponent />
-          </ProtectedRoute>
-        }
-        path="/:componentId/responsables"
-      />
+        <Route
+          element={
+            <ProtectedRoute>
+              <UsersByComponent />
+            </ProtectedRoute>
+          }
+          path="/:componentId/responsables"
+        />
 
-      <Route
-        element={
-          <ProtectedRoute>
-            <IndexPage />
-          </ProtectedRoute>
-        }
-        path="/evidences"
-      />
+        <Route
+          element={
+            <ProtectedRoute>
+              <IndexPage />
+            </ProtectedRoute>
+          }
+          path="/evidences"
+        />
 
-      <Route
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
-        path="/users/:userId"
-      />
+        <Route
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+          path="/users/:userId"
+        />
 
-      <Route
-        element={
-          <ProtectedRoute>
-            <IndexPage />
-          </ProtectedRoute>
-        }
-        path="/evidences/:id"
-      />
-      <Route
-        element={
-          <ProtectedRoute>
-            <UploadForm />
-          </ProtectedRoute>
-        }
-        path="/evidences/upload"
-      />
+        <Route
+          element={
+            <ProtectedRoute>
+              <IndexPage />
+            </ProtectedRoute>
+          }
+          path="/evidences/:id"
+        />
+        <Route
+          element={
+            <ProtectedRoute>
+              <UploadForm />
+            </ProtectedRoute>
+          }
+          path="/evidences/upload"
+        />
 
-      <Route
-        element={
-          <ProtectedRoute>
-            <PowerBIReport />
-          </ProtectedRoute>
-        }
-        path="/reporte"
-      />
+        <Route
+          element={
+            <ProtectedRoute>
+              <PowerBIReport />
+            </ProtectedRoute>
+          }
+          path="/reporte"
+        />
 
-      <Route
-        element={
-          <ProtectedRoute>
-            <HomePage />
-          </ProtectedRoute>
-        }
-        path="/"
-      />
-    </Routes>
+        <Route
+          element={
+            <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
+          }
+          path="/"
+        />
+      </Routes>
+    </Suspense>
   );
 }
 

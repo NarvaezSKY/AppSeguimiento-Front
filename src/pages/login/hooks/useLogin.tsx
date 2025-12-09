@@ -1,4 +1,5 @@
 import { useAuthStore } from "@/store/auth.store";
+import { useUsersStore } from "@/store/users.store";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -7,11 +8,15 @@ export function useLogin() {
   const isLoading = useAuthStore((state) => state.isLoading);
   const error = useAuthStore((state) => state.error);
   const navigate = useNavigate();
+  const { getAllUsers } = useUsersStore();
 
   const handleLogin = async (email: string, password: string) => {
     try {
       await login(email, password);
       navigate("/");
+
+      await getAllUsers();
+
       toast.success("Iniciaste sesión exitosamente");
     } catch (err: any) {
       toast.error(
