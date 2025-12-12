@@ -20,6 +20,10 @@ import pfpEdith from "../../assets/profiles/Edith.png";
 import pfpJuian from "../../assets/profiles/Inge Julian.png";
 import pfpRodrigo from "../../assets/profiles/Rodrigo.png";
 import pfpDiego from "../../assets/profiles/Diego.png";
+import pfpAndrea from "../../assets/profiles/Andrea.png";
+import pfpClaudia from "../../assets/profiles/DoñaClau.png";
+import pfpCarolina from "../../assets/profiles/Carolina.png";
+import pfpVeronica from "../../assets/profiles/Veronica.png";
 
 const PROFILE_IMAGES: Record<string, { src: string; alt: string }> = {
   "Edith Betancourt Sánchez": { src: pfpEdith, alt: "Edith Betancourt" },
@@ -31,6 +35,19 @@ const PROFILE_IMAGES: Record<string, { src: string; alt: string }> = {
   "Diego Arley Arias Guzman": {
     src: pfpDiego,
     alt: "Diego Arley Arias Guzman",
+  },
+  "Luz Andrea Granada Ceballos": {
+    src: pfpAndrea,
+    alt: "Luz Andrea Granada Ceballos",
+  },
+  "Claudia Patricia Giraldo Carmona": {
+    src: pfpClaudia,
+    alt: "Claudia Patricia Giraldo Carmona",
+  },
+  "Carolina Chaves Dueñas": { src: pfpCarolina, alt: "Carolina Chaves Dueñas" },
+  "Veronica Natalia Arenas Garcia": {
+    src: pfpVeronica,
+    alt: "Veronica Natalia Arenas Garcia",
   },
 };
 
@@ -195,7 +212,7 @@ export default function ProfilePage() {
                   <div className="truncate">
                     {selectedTrimestre
                       ? trimestres.find((t) => t.value === selectedTrimestre)
-                          ?.label
+                        ?.label
                       : "Todos los trimestres"}
                   </div>
                 </div>

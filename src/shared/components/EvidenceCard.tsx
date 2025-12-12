@@ -21,10 +21,40 @@ import pfpEdith from '../../assets/profiles/Edith.png';
 import pfpJuian from '../../assets/profiles/Inge Julian.png';
 import pfpRodrigo from '../../assets/profiles/Rodrigo.png';
 import pfpDiego from '../../assets/profiles/Diego.png';
+import pfpAndrea from '../../assets/profiles/Andrea.png';
+import pfpClaudia from '../../assets/profiles/DoñaClau.png';
+import pfpCarolina from '../../assets/profiles/Carolina.png';
+import pfpVeronica from '../../assets/profiles/Veronica.png';
 
 interface EvidenceCardProps {
   evidence: IEvidence;
 }
+
+const PROFILE_IMAGES: Record<string, { src: string; alt: string }> = {
+  "Edith Betancourt Sánchez": { src: pfpEdith, alt: "Edith Betancourt" },
+  "Julián Andrés Garcés Muñoz": { src: pfpJuian, alt: "Julián Andrés Garcés" },
+  "Rodrigo Alberto Montaño Fuentes": {
+    src: pfpRodrigo,
+    alt: "Rodrigo Alberto Montaño",
+  },
+  "Diego Arley Arias Guzman": {
+    src: pfpDiego,
+    alt: "Diego Arley Arias Guzman",
+  },
+  "Luz Andrea Granada Ceballos": {
+    src: pfpAndrea,
+    alt: "Luz Andrea Granada Ceballos",
+  },
+  "Claudia Patricia Giraldo Carmona": {
+    src: pfpClaudia,
+    alt: "Claudia Patricia Giraldo Carmona",
+  },
+  "Carolina Chaves Dueñas": { src: pfpCarolina, alt: "Carolina Chaves Dueñas" },
+  "Veronica Natalia Arenas Garcia": {
+    src: pfpVeronica,
+    alt: "Veronica Natalia Arenas Garcia",
+  },
+};
 
 const getStatusColor = (estado: string) => {
   if (!estado) return "default";
@@ -279,31 +309,13 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
                 key={responsable._id}
                 className="flex items-center gap-2 bg-default-100 rounded-lg px-3 py-2"
               >
-                {responsable.nombre === "Edith Betancourt Sánchez" ? (
+                {PROFILE_IMAGES[responsable.nombre] ? (
                   <img 
-                    src={pfpEdith} 
-                    alt="Edith Betancourt" 
+                    src={PROFILE_IMAGES[responsable.nombre].src}
+                    alt={PROFILE_IMAGES[responsable.nombre].alt}
                     className="w-8 h-8 rounded-full object-cover" 
                   />
-                ) : responsable.nombre === "Julián Andrés Garcés Muñoz" ? (
-                  <img 
-                    src={pfpJuian} 
-                    alt="Julián Andrés Garcés" 
-                    className="w-8 h-8 rounded-full object-cover" 
-                  />
-                ) : responsable.nombre === "Rodrigo Alberto Montaño Fuentes" ? (
-                  <img 
-                    src={pfpRodrigo} 
-                    alt="Rodrigo Alberto Montaño" 
-                    className="w-8 h-8 rounded-full object-cover" 
-                  />
-                ) :responsable.nombre === "Diego Arley Arias Guzman" ? (
-                  <img 
-                    src={pfpDiego} 
-                    alt="Rodrigo Alberto Montaño" 
-                    className="w-8 h-8 rounded-full object-cover" 
-                  />
-                ):(
+                ) : (
                   <Avatar
                     size="sm"
                     name={getInitials(responsable.nombre)}
@@ -457,7 +469,7 @@ function normalizarEstado(s: string) {
     return "Entrega Extemporanea";
   if (t === "no logro") return "No logro";
   if (t === "entregada") return "Entregada";
-  if (t === "por entregar") return "Por Entregar";
+  if (t === "por entregar") return "Por entregar";
   if (t === "entrega futura") return "Entrega Futura";
   return s;
 }
