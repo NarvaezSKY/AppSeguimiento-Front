@@ -19,19 +19,28 @@ function App() {
     const token = sessionStorage.getItem("token");
     if (!token) return;
 
-    // call stable store methods via getState(), so deps can be []
+    // Solo verificamos si NO estamos en la ruta de login
+    // Esto previene conflictos con el flujo de login
+    if (window.location.pathname === '/login') return;
+
+    // Verificar token existente al montar la app
     const { verify } = useAuthStore.getState();
     verify().catch(() => {
       sessionStorage.removeItem("token");
       useAuthStore.getState().logout();
       navigate('/login', { replace: true });
     });
-
-    // Remove the user fetching from here - it should happen on login
   }, []); // <-- run once on mount
 
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Cargando...</div>}>
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    }>
       <Routes>
         <Route
           element={

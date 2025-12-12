@@ -12,12 +12,20 @@ export function useLogin() {
 
   const handleLogin = async (email: string, password: string) => {
     try {
+      // 1. Primero autenticamos
       await login(email, password);
-      navigate("/");
-
-      await getAllUsers();
-
-      toast.success("Iniciaste sesión exitosamente");
+      
+      // 2. Precargamos datos necesarios ANTES de navegar
+      try {
+        await getAllUsers();
+      } catch (userErr) {
+        // Si falla getAllUsers, aún permitimos login pero logueamos el error
+        console.warn("No se pudieron cargar usuarios inicialmente:", userErr);
+      }
+      
+      // 3. Solo navegamos cuando todo está listo
+      toast.success("Iniciaste sesión exitosamente");
+      navigate("/", { replace: true });
     } catch (err: any) {
       toast.error(
         err?.message || "Error al iniciar sesión. Verifica tus credenciales."

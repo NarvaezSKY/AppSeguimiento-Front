@@ -16,10 +16,23 @@ import {
 import EstadoGraphics from "./Components/estadoGraphics";
 import { Divider } from "@heroui/react";
 import useProfile from "./hooks/useProfile";
-import pfpEdith from '../../assets/profiles/Edith.png'
-import pfpJuian from '../../assets/profiles/Inge Julian.png'
-import pfpRodrigo from '../../assets/profiles/Rodrigo.png'
-import pfpDiego from '../../assets/profiles/Diego.png'
+import pfpEdith from "../../assets/profiles/Edith.png";
+import pfpJuian from "../../assets/profiles/Inge Julian.png";
+import pfpRodrigo from "../../assets/profiles/Rodrigo.png";
+import pfpDiego from "../../assets/profiles/Diego.png";
+
+const PROFILE_IMAGES: Record<string, { src: string; alt: string }> = {
+  "Edith Betancourt Sánchez": { src: pfpEdith, alt: "Edith Betancourt" },
+  "Julián Andrés Garcés Muñoz": { src: pfpJuian, alt: "Julián Andrés Garcés" },
+  "Rodrigo Alberto Montaño Fuentes": {
+    src: pfpRodrigo,
+    alt: "Rodrigo Alberto Montaño",
+  },
+  "Diego Arley Arias Guzman": {
+    src: pfpDiego,
+    alt: "Diego Arley Arias Guzman",
+  },
+};
 
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -58,19 +71,13 @@ export default function ProfilePage() {
         {/* Datos del usuario */}
         <Card className="w-full">
           <CardHeader className="flex items-center gap-4">
-            {user.nombre === "Edith Betancourt Sánchez" && (
-              <img src={pfpEdith} alt="Edith Betancourt" className="w-32 h-32 rounded-full object-cover border-4 border-secondary" />
-            )}
-            {user.nombre === "Julián Andrés Garcés Muñoz" && (
-              <img src={pfpJuian} alt="Julián Andrés Garcés" className="w-32 h-32 rounded-full object-cover border-4 border-secondary" />
-            )}
-            {user.nombre === "Rodrigo Alberto Montaño Fuentes" && (
-              <img src={pfpRodrigo} alt="Rodrigo Alberto Montaño" className="w-32 h-32 rounded-full object-cover border-4 border-secondary" />
-            )}
-            {user.nombre === "Diego Arley Arias Guzman" && (
-              <img src={pfpDiego} alt="Diego Arley Arias Guzman" className="w-32 h-32 rounded-full object-cover border-4 border-secondary" />
-            )}
-            {user.nombre !== "Edith Betancourt Sánchez" && user.nombre !== "Julián Andrés Garcés Muñoz" && user.nombre !== "Rodrigo Alberto Montaño Fuentes" && user.nombre !== "Diego Arley Arias Guzman" && (
+            {PROFILE_IMAGES[user.nombre] ? (
+              <img
+                src={PROFILE_IMAGES[user.nombre].src}
+                alt={PROFILE_IMAGES[user.nombre].alt}
+                className="w-32 h-32 rounded-full object-cover border-4 border-secondary"
+              />
+            ) : (
               <Avatar name={user.nombre} size="lg" />
             )}
             <div>
@@ -102,25 +109,21 @@ export default function ProfilePage() {
                 <span className="text-sm opacity-70">▼</span>
               </button>
             </DropdownTrigger>
-            <DropdownMenu aria-label="Filtrar por componente">
-              <DropdownItem
-                key="all-comp"
-                onClick={() => selectComponent(null)}
-                title="Todos"
-              >
-                Todos
-              </DropdownItem>
-              <>
-                {componentOptions.map((opt) => (
-                  <DropdownItem
-                    key={opt.value}
-                    onClick={() => selectComponent(opt.value)}
-                    title={opt.label}
-                  >
-                    {opt.label}
-                  </DropdownItem>
-                ))}
-              </>
+            <DropdownMenu
+              aria-label="Filtrar por componente"
+              items={[
+                { value: "all-comp", label: "Todos" },
+                ...componentOptions,
+              ]}
+              onAction={(key) =>
+                selectComponent(key === "all-comp" ? null : String(key))
+              }
+            >
+              {(item) => (
+                <DropdownItem key={item.value} title={item.label}>
+                  {item.label}
+                </DropdownItem>
+              )}
             </DropdownMenu>
           </Dropdown>
 
@@ -139,21 +142,21 @@ export default function ProfilePage() {
                 <span className="text-sm opacity-70">▼</span>
               </button>
             </DropdownTrigger>
-            <DropdownMenu aria-label="Filtrar por actividad">
-              <DropdownItem key="all-act" onClick={() => selectActivity(null)}>
-                Todas las actividades
-              </DropdownItem>
-              <>
-                {activityOptions.map((opt) => (
-                  <DropdownItem
-                    key={opt.value}
-                    onClick={() => selectActivity(opt.value)}
-                    title={opt.label}
-                  >
-                    {opt.label}
-                  </DropdownItem>
-                ))}
-              </>
+            <DropdownMenu
+              aria-label="Filtrar por actividad"
+              items={[
+                { value: "all-act", label: "Todas las actividades" },
+                ...activityOptions,
+              ]}
+              onAction={(key) =>
+                selectActivity(key === "all-act" ? null : String(key))
+              }
+            >
+              {(item) => (
+                <DropdownItem key={item.value} title={item.label}>
+                  {item.label}
+                </DropdownItem>
+              )}
             </DropdownMenu>
           </Dropdown>
 
@@ -161,26 +164,24 @@ export default function ProfilePage() {
             <DropdownTrigger>
               <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[160px]">
                 <div className="flex-1 text-left">
-                  <div className="text-xs text-gray-500 leading-none">Estado</div>
+                  <div className="text-xs text-gray-500 leading-none">
+                    Estado
+                  </div>
                   <div>{selectedEstado ? selectedEstado : "Todos"}</div>
                 </div>
                 <span className="text-sm opacity-70">▼</span>
               </button>
             </DropdownTrigger>
-            <DropdownMenu aria-label="Filtrar por estado">
-              <DropdownItem key="all" onClick={() => setSelectedEstado(null)}>
-                Todos
-              </DropdownItem>
-              <>
-                {ESTADOS.map((estado) => (
-                  <DropdownItem
-                    key={estado.value}
-                    onClick={() => setSelectedEstado(estado.value)}
-                  >
-                    {estado.label}
-                  </DropdownItem>
-                ))}
-              </>
+            <DropdownMenu
+              aria-label="Filtrar por estado"
+              items={[{ value: "all", label: "Todos" }, ...ESTADOS]}
+              onAction={(key) =>
+                setSelectedEstado(key === "all" ? null : String(key))
+              }
+            >
+              {(item) => (
+                <DropdownItem key={item.value}>{item.label}</DropdownItem>
+              )}
             </DropdownMenu>
           </Dropdown>
 
@@ -188,7 +189,9 @@ export default function ProfilePage() {
             <DropdownTrigger>
               <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[200px]">
                 <div className="flex-1 text-left">
-                  <div className="text-xs text-gray-500 leading-none">Trimestre</div>
+                  <div className="text-xs text-gray-500 leading-none">
+                    Trimestre
+                  </div>
                   <div className="truncate">
                     {selectedTrimestre
                       ? trimestres.find((t) => t.value === selectedTrimestre)
@@ -199,23 +202,16 @@ export default function ProfilePage() {
                 <span className="text-sm opacity-70">▼</span>
               </button>
             </DropdownTrigger>
-            <DropdownMenu aria-label="Filtrar por trimestre">
-              <DropdownItem
-                key="all-trim"
-                onClick={() => setSelectedTrimestre(null)}
-              >
-                Todos
-              </DropdownItem>
-              <>
-                {trimestres.map((tr) => (
-                  <DropdownItem
-                    key={tr.value}
-                    onClick={() => setSelectedTrimestre(tr.value)}
-                  >
-                    {tr.label}
-                  </DropdownItem>
-                ))}
-              </>
+            <DropdownMenu
+              aria-label="Filtrar por trimestre"
+              items={[{ value: "all-trim", label: "Todos" }, ...trimestres]}
+              onAction={(key) =>
+                setSelectedTrimestre(key === "all-trim" ? null : Number(key))
+              }
+            >
+              {(item) => (
+                <DropdownItem key={item.value}>{item.label}</DropdownItem>
+              )}
             </DropdownMenu>
           </Dropdown>
         </div>

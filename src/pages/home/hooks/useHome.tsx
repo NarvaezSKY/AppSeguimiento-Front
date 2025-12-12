@@ -24,11 +24,17 @@ export default function useHome(): UseHomeResult {
   const refresh = useCallback(async () => {
     try {
       await getComponents();
-      await getAllUsers();
-    } catch {
+      // Intentar cargar usuarios, pero no fallar si no se puede
+      try {
+        await getAllUsers();
+      } catch (userErr) {
+        console.warn("No se pudieron cargar usuarios:", userErr);
+      }
+    } catch (err) {
+      console.error("Error al cargar componentes:", err);
       toast.error("Error al cargar los componentes");
     }
-  }, [getComponents]);
+  }, [getComponents, getAllUsers]);
 
   useEffect(() => {
     refresh();
