@@ -2,6 +2,40 @@ import DefaultLayout from "@/layouts/default";
 import { useUsersByComponent } from "./hooks/useUsersByComponent";
 import { useLocation, Link } from "react-router-dom";
 import { Card, CardHeader, Avatar, Chip } from "@heroui/react";
+import pfpEdith from '../../assets/profiles/Edith.png';
+import pfpJuian from '../../assets/profiles/Inge Julian.png';
+import pfpRodrigo from '../../assets/profiles/Rodrigo.png';
+import pfpDiego from '../../assets/profiles/Diego.png';
+import pfpAndrea from '../../assets/profiles/Andrea.png';
+import pfpClaudia from '../../assets/profiles/DoñaClau.png';
+import pfpCarolina from '../../assets/profiles/Carolina.png';
+import pfpVeronica from '../../assets/profiles/Veronica.png';
+
+const PROFILE_IMAGES: Record<string, { src: string; alt: string }> = {
+  "Edith Betancourt Sánchez": { src: pfpEdith, alt: "Edith Betancourt" },
+  "Julián Andrés Garcés Muñoz": { src: pfpJuian, alt: "Julián Andrés Garcés" },
+  "Rodrigo Alberto Montaño Fuentes": {
+    src: pfpRodrigo,
+    alt: "Rodrigo Alberto Montaño",
+  },
+  "Diego Arley Arias Guzman": {
+    src: pfpDiego,
+    alt: "Diego Arley Arias Guzman",
+  },
+  "Luz Andrea Granada Ceballos": {
+    src: pfpAndrea,
+    alt: "Luz Andrea Granada Ceballos",
+  },
+  "Claudia Patricia Giraldo Carmona": {
+    src: pfpClaudia,
+    alt: "Claudia Patricia Giraldo Carmona",
+  },
+  "Carolina Chaves Dueñas": { src: pfpCarolina, alt: "Carolina Chaves Dueñas" },
+  "Veronica Natalia Arenas Garcia": {
+    src: pfpVeronica,
+    alt: "Veronica Natalia Arenas Garcia",
+  },
+};
 
 export const UsersByComponent = () => {
   const location = useLocation();
@@ -33,17 +67,25 @@ export const UsersByComponent = () => {
               >
                 <Card className="transition-shadow group-hover:shadow-2xl group-hover:border-primary-500 h-full flex flex-col justify-center">
                   <CardHeader className="flex items-center gap-4 py-6">
-                    <Avatar
-                      name={user.nombre}
-                      size="lg"
-                    >
-                      {user.nombre
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()
-                        .slice(0, 3)}
-                    </Avatar>
+                    {PROFILE_IMAGES[user.nombre] ? (
+                      <img 
+                        src={PROFILE_IMAGES[user.nombre].src}
+                        alt={PROFILE_IMAGES[user.nombre].alt}
+                        className="w-14 h-14 rounded-full object-cover" 
+                      />
+                    ) : (
+                      <Avatar
+                        name={user.nombre}
+                        size="lg"
+                      >
+                        {user.nombre
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase()
+                          .slice(0, 3)}
+                      </Avatar>
+                    )}
                     <div className="min-w-0">
                       <h3 className="text-lg font-bold group-hover:text-primary-700 transition-colors break-words">
                         {user.nombre}
