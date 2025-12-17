@@ -55,7 +55,7 @@ export const Navbar = () => {
                 <img src={pfpEdith} alt="Edith Betancourt Sánchez" className="w-14 h-14 rounded-full border-primary border-2" />
                 <div>
                   <p className="font-bold text-white text-xl">Edith Betancourt Sánchez</p>
-                  <Chip variant="solid" color="warning" size="sm" className="text-white">Administrador</Chip>
+                  <Chip variant="solid" color="primary" size="sm" className="text-white">Administrador</Chip>
 
                 </div>
               </Link>
