@@ -8,9 +8,11 @@ import {
   NavbarMenu,
 } from "@heroui/navbar";
 import LogoSENA from "/icon.png";
+import pfpEdith from "../assets/profiles/Edith.png";
 
 import { ThemeSwitch } from "@/components/theme-switch";
 import { useAuthStore } from "@/store/auth.store";
+import { Chip } from "@heroui/react";
 
 export const Navbar = () => {
   const user = useAuthStore((s) => s.user);
@@ -27,9 +29,12 @@ export const Navbar = () => {
             color="foreground"
             href="/"
           >
-            <img src={LogoSENA} alt="logo sena" className="w-15 h-15" />
+            <img src={LogoSENA} alt="logo sena" className="w-15 h-15 mr-2" />
             <p className="font-bold text-white text-xl">
-              Seguimiento Plan Operativo CMR
+              Seguimiento Plan Operativo <br />
+              <span className="text-sm">
+                Coordinación Misional Regional
+              </span>
             </p>
           </Link>
         </NavbarBrand>
@@ -39,15 +44,22 @@ export const Navbar = () => {
         className="hidden sm:flex basis-1/5 sm:basis-full"
         justify="end"
       >
-        <NavbarItem className="gap-3 max-w-fit">
+        <NavbarItem className="gap-2 max-w-fit mr-4">
           {user && (
-            <Link
-              className="flex justify-end items-center gap-1"
-              color="foreground"
-              href="/users/68ba073327e5ac74d4a55726"
-            >
-              <p className="font-bold text-white text-xl">Edith Betancourt Sánchez</p>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                className="flex justify-end items-center gap-1"
+                color="foreground"
+                href="/users/68ba073327e5ac74d4a55726"
+              >
+                <img src={pfpEdith} alt="Edith Betancourt Sánchez" className="w-14 h-14 rounded-full border-primary border-2" />
+                <div>
+                  <p className="font-bold text-white text-xl">Edith Betancourt Sánchez</p>
+                  <Chip variant="solid" color="warning" size="sm" className="text-white">Administrador</Chip>
+
+                </div>
+              </Link>
+            </div>
           )}
         </NavbarItem>
 

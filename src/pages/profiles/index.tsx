@@ -92,7 +92,7 @@ export default function ProfilePage() {
               <img
                 src={PROFILE_IMAGES[user.nombre].src}
                 alt={PROFILE_IMAGES[user.nombre].alt}
-                className="w-32 h-32 rounded-full object-cover border-4 border-secondary"
+                className="w-32 h-32 rounded-full object-cover border-4 border-primary"
               />
             ) : (
               <Avatar name={user.nombre} size="lg" />
