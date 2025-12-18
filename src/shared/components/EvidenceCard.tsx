@@ -25,6 +25,7 @@ import pfpAndrea from '../../assets/profiles/Andrea.png';
 import pfpClaudia from '../../assets/profiles/DoñaClau.png';
 import pfpCarolina from '../../assets/profiles/Carolina.png';
 import pfpVeronica from '../../assets/profiles/Veronica.png';
+import pfpNini from '../../assets/profiles/Nini.jpg';
 
 interface EvidenceCardProps {
   evidence: IEvidence;
@@ -53,6 +54,10 @@ const PROFILE_IMAGES: Record<string, { src: string; alt: string }> = {
   "Veronica Natalia Arenas Garcia": {
     src: pfpVeronica,
     alt: "Veronica Natalia Arenas Garcia",
+  },
+  "Nini Johanna Sanchez Velasco": {
+    src: pfpNini,
+    alt: "Nini Johanna Sanchez Velasco",
   },
 };
 
