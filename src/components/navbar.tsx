@@ -8,7 +8,10 @@ import {
   NavbarMenu,
 } from "@heroui/navbar";
 import LogoSENA from "/icon.png";
+import LogoSeguimiento from '../assets/Logo.png'
+import LogoCMR from '../assets/CMR.png'
 import pfpEdith from "../assets/profiles/Edith.png";
+import pfpJulian from "../assets/profiles/Inge Julian.png";
 
 import { ThemeSwitch } from "@/components/theme-switch";
 import { useAuthStore } from "@/store/auth.store";
@@ -30,12 +33,11 @@ export const Navbar = () => {
             href="/"
           >
             <img src={LogoSENA} alt="logo sena" className="w-15 h-15 mr-2" />
-            <p className="font-bold text-white text-xl">
-              Seguimiento Plan Operativo <br />
-              <span className="text-sm">
-                Coordinación Misional Regional
-              </span>
-            </p>
+            <div className="flex flex-col">
+              <img src={LogoSeguimiento} alt="logo sena" className="w-65 mt-3" />
+              <img src={LogoCMR} alt="CMR" className="w-40 mr-0 mb-3"/>
+
+            </div>
           </Link>
         </NavbarBrand>
       </NavbarContent>
@@ -50,11 +52,15 @@ export const Navbar = () => {
               <Link
                 className="flex justify-end items-center gap-1"
                 color="foreground"
-                href="/users/68ba073327e5ac74d4a55726"
+                href={user.email?.includes("jgarces") ? "/users/68ba075327e5ac74d4a5572a" : "/users/68ba073327e5ac74d4a55726"}
               >
-                <img src={pfpEdith} alt="Edith Betancourt Sánchez" className="w-14 h-14 rounded-full border-primary border-2" />
+                <img
+                  src={user.email?.includes("jgarces") ? pfpJulian : pfpEdith}
+                  alt={user.name}
+                  className="w-14 h-14 rounded-full border-primary border-2"
+                />
                 <div>
-                  <p className="font-bold text-white text-xl">Edith Betancourt Sánchez</p>
+                  <p className="font-bold text-white text-xl">{user.name}</p>
                   <Chip variant="solid" color="primary" size="sm" className="text-white">Administrador</Chip>
 
                 </div>

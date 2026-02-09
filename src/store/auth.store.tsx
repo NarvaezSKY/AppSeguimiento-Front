@@ -14,7 +14,7 @@ interface AuthState {
   register: (data: any) => Promise<any>;
   logout: () => Promise<void>;
   verify: () => Promise<any>;
-
+  initialize: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -75,6 +75,21 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (err: any) {
       set({ isLoading: false, error: err.message || "Error al cerrar sesión" });
       throw err;
+    }
+  },
+
+  initialize: async () => {
+    const token = sessionStorage.getItem("token");
+    if (token) {
+      try {
+        set({ isLoading: true });
+        const verify = verifyUseCase(authRepository);
+        const result = await verify();
+        set({ isLoading: false, verifyError: null, user: result.data });
+      } catch (err: any) {
+        set({ isLoading: false, verifyError: err.message || "Error al verificar" });
+        sessionStorage.removeItem("token");
+      }
     }
   },
 }));
