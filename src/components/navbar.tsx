@@ -23,7 +23,7 @@ export const Navbar = () => {
   return (
     <HeroUINavbar
       maxWidth="xl"
-      className="bg-success text-white fixed top-0 z-50 w-full h-full max-h-[85px]"
+      className="bg-success text-white fixed top-0 z-50 w-full h-full max-h-[95px]"
     >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand className="gap-3 max-w-fit">
@@ -32,10 +32,10 @@ export const Navbar = () => {
             color="foreground"
             href="/"
           >
-            <img src={LogoSENA} alt="logo sena" className="w-15 h-15 mr-2" />
-            <div className="flex flex-col">
-              <img src={LogoSeguimiento} alt="logo sena" className="w-65 mt-3" />
-              <img src={LogoCMR} alt="CMR" className="w-40 mr-0 mb-3"/>
+            <img src={LogoSENA} alt="logo sena" className="w-17 h-15 mr-2" />
+            <div className="flex flex-col space-y-[-8px]">
+              <img src={LogoSeguimiento} alt="logo sena" className="w-105 h-19 mt-6" />
+              <img src={LogoCMR} alt="CMR" className="w-40 mb-6 mr-2"/>
 
             </div>
           </Link>
