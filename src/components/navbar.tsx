@@ -7,7 +7,7 @@ import {
   NavbarMenuToggle,
   NavbarMenu,
 } from "@heroui/navbar";
-import LogoSENA from "/icon.png";
+import LogoSENA from "/white_icon.png";
 import LogoSeguimiento from '../assets/Logo.png'
 import LogoCMR from '../assets/CMR.png'
 import pfpEdith from "../assets/profiles/Edith.png";
@@ -32,7 +32,7 @@ export const Navbar = () => {
             color="foreground"
             href="/"
           >
-            <img src={LogoSENA} alt="logo sena" className="w-17 h-15 mr-2" />
+            <img src={LogoSENA} alt="logo sena" className="w-19 h-19 mr-2" />
             <div className="flex flex-col space-y-[-8px]">
               <img src={LogoSeguimiento} alt="logo sena" className="w-105 h-19 mt-6" />
               <img src={LogoCMR} alt="CMR" className="w-40 mb-6 mr-2"/>
