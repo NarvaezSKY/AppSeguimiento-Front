@@ -45,10 +45,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       <aside className="hidden md:flex flex-col h-full w-64 bg-default-100 border-r border-gray-200 pt-20 px-4 fixed z-30 pr-4">
         <div className="flex flex-col h-screen justify-between mt-10">
           <nav className="flex flex-col gap-2 flex-1">
-            <h1 className="font-bold">Módulos</h1>
+            <h1 className="font-bold text-info">Módulos</h1>
             <Link
-              className={`font-semibold text-success hover:text-default-800 underline flex justify-start gap-1 transition-all
-    ${currentPath === "/" ? "bg-success text-white rounded-md py-1 px-1 hover:text-white" : ""}
+              className={`font-semibold text-info hover:text-default-800 underline flex justify-start gap-1 transition-all
+    ${currentPath === "/" ? "bg-info text-white rounded-md py-1 px-1 hover:text-white" : ""}
   `}
               href="/"
               isExternal={false}
@@ -57,37 +57,38 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               Componentes
             </Link>
             <Link
-              className={`font-semibold text-success hover:text-default-800 underline flex justify-start gap-1 transition-all 
-    ${currentPath === "/reporte" ? "bg-success text-white rounded-md py-1 px-1 hover:text-white" : ""}`}
+              className={`font-semibold text-info hover:text-default-800 underline flex justify-start gap-1 transition-all 
+    ${currentPath === "/reporte" ? "bg-info text-white rounded-md py-1 px-1 hover:text-white" : ""}`}
               href="/reporte"
             >
               <HiOutlineDocumentReport className="w-4 h-4" />
               Reporte Power BI
             </Link>
             <Link
-              className={`font-semibold text-success hover:text-default-800 underline flex justify-start gap-1 transition-all 
-    ${currentPath === "/evidences/upload" ? "bg-success text-white rounded-md py-1 px-1 hover:text-white" : ""}`}
+              className={`font-semibold text-info hover:text-default-800 underline flex justify-start gap-1 transition-all 
+    ${currentPath === "/evidences/upload" ? "bg-info text-white rounded-md py-1 px-1 hover:text-white" : ""}`}
               href="/evidences/upload"
             >
               <FaCalendarPlus className="w-4 h-4" />
               Subir nueva evidencia
             </Link>
             <Link
-              className={`font-semibold text-success hover:text-default-800 underline flex justify-start gap-1 transition-all 
-    ${currentPath === "/evidences" ? "bg-success text-white rounded-md py-1 px-1 hover:text-white" : ""}`}
+              className={`font-semibold text-info hover:text-default-800 underline flex justify-start gap-1 transition-all 
+    ${currentPath === "/evidences" ? "bg-info text-white rounded-md py-1 px-1 hover:text-white" : ""}`}
               href="/evidences"
             >
               <FaCalendarCheck className="w-4 h-4" />
               Ver todas las evidencias
             </Link>
             <Divider />
-            <Accordion>
+            <Accordion
+              defaultExpandedKeys={["1"]}>
               <AccordionItem
                 key={"1"}
                 aria-label="Equipo"
                 title="Equipo"
                 subtitle={"Ver integrantes de la CMR"}
-                className={"cursor-pointer"}
+                className={"cursor-pointer text-info hover:text-default-800"}
               >
                 {users.map((user) => (
                   <Link
@@ -132,8 +133,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <DrawerHeader className="font-bold">Menú</DrawerHeader>
           <DrawerBody>
             <Link
-              className={`font-semibold text-success hover:text-default-800 underline flex justify-start gap-1 transition-all
-    ${currentPath === "/home" ? "bg-success text-white rounded-md py-1 px-1 hover:text-white" : ""}
+              className={`font-semibold text-info hover:text-default-800 underline flex justify-start gap-1 transition-all
+    ${currentPath === "/home" ? "bg-info text-white rounded-md py-1 px-1 hover:text-white" : ""}
   `}
               href="/home"
             >
@@ -141,8 +142,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               Inicio
             </Link>
             <Link
-              className={`font-semibold text-success hover:text-default-800 underline flex justify-start gap-1 transition-all 
-    ${currentPath === "/users" ? "bg-success text-white rounded-md py-1 px-1 hover:text-white" : ""}`}
+              className={`font-semibold text-info hover:text-default-800 underline flex justify-start gap-1 transition-all 
+    ${currentPath === "/users" ? "bg-info text-white rounded-md py-1 px-1 hover:text-white" : ""}`}
               href="/users"
             >
               <FaCalendarCheck className="w-4 h-4" />

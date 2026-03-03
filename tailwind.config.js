@@ -18,23 +18,24 @@ export default {
       themes: {
         light: {
           colors: {
-            success: "#39A900",    // Verde (correcto)
-            primary: "#70277a",    // Morado (correcto)
-            warning: "#FFA500",    // Naranja/Amarillo
-            danger: "#f31260",     // Rojo/Rosa
-            secondary: "#9353D3",  // Morado claro
-            
-            info: "#0070F0",       // Azul
+            success: "#39A900",
+            primary: "#70277a",
+            warning: "#FFA500",
+            danger: "#f31260",
+            secondary: "#9353D3",
+            info: "#00304d",
+            lightblue: "#4fe5fa",
           },
         },
         dark: {
           colors: {
             success: "#39A900",
-            primary: "#70277a", 
+            primary: "#70277a",
             warning: "#FFA500",
             danger: "#f31260",
             secondary: "#9353D3",
             info: "#0070F0",
+            lightblue: "#4fe5fa",
           },
         },
       },

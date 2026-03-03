@@ -14,23 +14,24 @@ import { PowerBIReport } from "./pages/PowerBI";
 
 function App() {
   const navigate = useNavigate();
+  const initialize = useAuthStore((s) => s.initialize);
+  const verifyError = useAuthStore((s) => s.verifyError);
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    if (!token) return;
-
-    // Solo verificamos si NO estamos en la ruta de login
-    // Esto previene conflictos con el flujo de login
+    // Solo inicializamos si NO estamos en la ruta de login
     if (window.location.pathname === '/login') return;
 
-    // Verificar token existente al montar la app
-    const { verify } = useAuthStore.getState();
-    verify().catch(() => {
-      sessionStorage.removeItem("token");
-      useAuthStore.getState().logout();
+    initialize().catch(() => {
       navigate('/login', { replace: true });
     });
-  }, []); // <-- run once on mount
+  }, [initialize, navigate]); // <-- run once on mount
+
+  // Redirigir a login si hay error de verificación
+  useEffect(() => {
+    if (verifyError && window.location.pathname !== '/login') {
+      navigate('/login', { replace: true });
+    }
+  }, [verifyError, navigate]);
 
   return (
     <Suspense fallback={

@@ -7,8 +7,11 @@ import {
   NavbarMenuToggle,
   NavbarMenu,
 } from "@heroui/navbar";
-import LogoSENA from "/icon.png";
+import LogoSENA from "/white_icon.png";
+import LogoSeguimiento from '../assets/Logo.png'
+import LogoCMR from '../assets/CMR.png'
 import pfpEdith from "../assets/profiles/Edith.png";
+import pfpJulian from "../assets/profiles/Inge Julian.png";
 
 import { ThemeSwitch } from "@/components/theme-switch";
 import { useAuthStore } from "@/store/auth.store";
@@ -20,7 +23,7 @@ export const Navbar = () => {
   return (
     <HeroUINavbar
       maxWidth="xl"
-      className="bg-success text-white fixed top-0 z-50 w-full h-full max-h-[85px]"
+      className="bg-success text-white fixed top-0 z-50 w-full h-full max-h-[95px]"
     >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand className="gap-3 max-w-fit">
@@ -29,13 +32,12 @@ export const Navbar = () => {
             color="foreground"
             href="/"
           >
-            <img src={LogoSENA} alt="logo sena" className="w-15 h-15 mr-2" />
-            <p className="font-bold text-white text-xl">
-              Seguimiento Plan Operativo <br />
-              <span className="text-sm">
-                Coordinación Misional Regional
-              </span>
-            </p>
+            <img src={LogoSENA} alt="logo sena" className="w-19 h-19 mr-2" />
+            <div className="flex flex-col space-y-[-8px]">
+              <img src={LogoSeguimiento} alt="logo sena" className="w-105 h-19 mt-6" />
+              <img src={LogoCMR} alt="CMR" className="w-40 mb-6 mr-2"/>
+
+            </div>
           </Link>
         </NavbarBrand>
       </NavbarContent>
@@ -50,11 +52,15 @@ export const Navbar = () => {
               <Link
                 className="flex justify-end items-center gap-1"
                 color="foreground"
-                href="/users/68ba073327e5ac74d4a55726"
+                href={user.email?.includes("jgarces") ? "/users/68ba075327e5ac74d4a5572a" : "/users/68ba073327e5ac74d4a55726"}
               >
-                <img src={pfpEdith} alt="Edith Betancourt Sánchez" className="w-14 h-14 rounded-full border-primary border-2" />
+                <img
+                  src={user.email?.includes("jgarces") ? pfpJulian : pfpEdith}
+                  alt={user.name}
+                  className="w-14 h-14 rounded-full border-primary border-2"
+                />
                 <div>
-                  <p className="font-bold text-white text-xl">Edith Betancourt Sánchez</p>
+                  <p className="font-bold text-white text-xl">{user.name}</p>
                   <Chip variant="solid" color="primary" size="sm" className="text-white">Administrador</Chip>
 
                 </div>
