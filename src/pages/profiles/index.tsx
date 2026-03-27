@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import DefaultLayout from "@/layouts/default";
 import { EvidenceCard } from "@/shared/components/EvidenceCard";
@@ -72,10 +73,48 @@ export default function ProfilePage() {
     selectActivity,
     selectedEstado,
     setSelectedEstado,
+    selectedAnio,
+    setSelectedAnio,
+    yearOptions,
     selectedTrimestre,
     setSelectedTrimestre,
     isLoading,
   } = useProfile(userId ?? null);
+
+  const activityDropdownItems = [
+    {
+      value: "all-act",
+      label: "Todas las actividades",
+      title: "Todas las actividades",
+      year: null,
+      isHeader: false,
+    },
+    ...(activityOptions ?? []).reduce((acc: any[], item: any, index: number) => {
+      const previousYear = index > 0 ? activityOptions[index - 1]?.year ?? null : null;
+      const currentYear = item.year ?? null;
+
+      if (index === 0 || currentYear !== previousYear) {
+        acc.push({
+          value: `year-header-${currentYear ?? "sin-anio"}`,
+          label: currentYear ? String(currentYear) : "Sin año",
+          title: currentYear ? String(currentYear) : "Sin año",
+          year: currentYear,
+          isHeader: true,
+        });
+      }
+
+      acc.push({
+        ...item,
+        isHeader: false,
+      });
+
+      return acc;
+    }, []),
+  ];
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [userId]);
 
   if (!user) {
     return (
@@ -166,17 +205,34 @@ export default function ProfilePage() {
             </DropdownTrigger>
             <DropdownMenu
               aria-label="Filtrar por actividad"
-              items={[
-                { value: "all-act", label: "Todas las actividades" },
-                ...activityOptions,
-              ]}
+              items={activityDropdownItems}
+              className="max-h-80 overflow-y-auto"
               onAction={(key) =>
                 selectActivity(key === "all-act" ? null : String(key))
               }
             >
-              {(item) => (
-                <DropdownItem key={item.value} title={item.label}>
-                  {item.label}
+              {(item: any) => (
+                <DropdownItem
+                  key={item.value}
+                  title={item.title}
+                  isDisabled={item.isHeader}
+                  textValue={item.label}
+                  className={item.isHeader ? "opacity-100 cursor-default" : undefined}
+                >
+                  {item.isHeader ? (
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-default-500 px-1 py-1">
+                      {item.label}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="truncate">{item.label}</span>
+                      {item.year && (
+                        <span className="text-[11px] px-2 py-0.5 rounded bg-default-100 text-default-600">
+                          {item.year}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </DropdownItem>
               )}
             </DropdownMenu>
@@ -200,6 +256,29 @@ export default function ProfilePage() {
               onAction={(key) =>
                 setSelectedEstado(key === "all" ? null : String(key))
               }
+            >
+              {(item) => (
+                <DropdownItem key={item.value}>{item.label}</DropdownItem>
+              )}
+            </DropdownMenu>
+          </Dropdown>
+
+          <Dropdown>
+            <DropdownTrigger>
+              <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[140px]">
+                <div className="flex-1 text-left">
+                  <div className="text-xs text-gray-500 leading-none">
+                    Año
+                  </div>
+                  <div>{selectedAnio}</div>
+                </div>
+                <span className="text-sm opacity-70">▼</span>
+              </button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label="Filtrar por año"
+              items={yearOptions ?? []}
+              onAction={(key) => setSelectedAnio(Number(key))}
             >
               {(item) => (
                 <DropdownItem key={item.value}>{item.label}</DropdownItem>

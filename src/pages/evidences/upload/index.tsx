@@ -99,7 +99,7 @@ export default function UploadForm() {
               label="Año"
               type="number"
               placeholder="Año"
-              defaultValue="2025"
+              defaultValue="2026"
               required
               disabled={isUploadingActivity || isUploadingEvidence}
               {...register("anio", { required: true })}

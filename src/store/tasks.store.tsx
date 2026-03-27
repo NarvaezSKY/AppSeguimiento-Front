@@ -20,8 +20,12 @@ import { IGetAllEvidencesReq } from "@/core/tasks/domain/get-evidences";
 
 import { IActivity } from "@/core/tasks/domain/upload-activity";
 import { User } from "@/core/users/domain/get-all-users";
-import { IActivityRes } from "@/core/tasks/domain/get-actividades-by-responsable";
+import {
+  IActivitiesByYearRes,
+} from "@/core/tasks/domain/get-actividades-by-responsable";
 import { IGetActividadesByResponsableReq } from '../core/tasks/domain/get-actividades-by-responsable/actividades-by-responsable.req';
+
+let latestEvidencesRequestId = 0;
 
 interface TasksState {
   isLoading: boolean;
@@ -30,7 +34,7 @@ interface TasksState {
   evidences: IEvidence[];
   components: IComponents[];
   activities: IActivity[];
-  activitiesInProfile?: IActivityRes[];
+  activitiesInProfile?: IActivitiesByYearRes;
   usersInComponent?: User[];
   error: string | null;
   lastActivityId?: string | null;
@@ -69,6 +73,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   evidences: [],
   components: [],
   activities: [],
+  activitiesInProfile: {},
   lastActivityId: null,
   lastComponentId: null,
   userComponents: [],
@@ -306,10 +311,14 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   },
 
   getAllEvidences: async (filter?: IGetAllEvidencesReq) => {
+    const requestId = ++latestEvidencesRequestId;
     set({ isLoading: true, error: null });
     try {
       const getAll = getAllEvidencesUseCase(tasksRepository);
       const result = await getAll(filter);
+
+      // Si llego una respuesta vieja, no debe pisar el estado del request mas reciente.
+      if (requestId !== latestEvidencesRequestId) return result;
 
       const maybeTop = result as any;
 
@@ -343,6 +352,8 @@ export const useTasksStore = create<TasksState>((set, get) => ({
 
       return result;
     } catch (err: any) {
+      if (requestId !== latestEvidencesRequestId) return;
+
       set({
         isLoading: false,
         error:

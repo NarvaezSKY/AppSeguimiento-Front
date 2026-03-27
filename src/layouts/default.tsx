@@ -52,7 +52,7 @@ export default function DefaultLayout({
         >
           <span className="text-default-600">Seguimiento Plan Oprativo - CMR</span>
           <p className="text-success font-bold">SENA</p>
-          <span className="text-default-600">Regional Cauca - 2025</span>
+          <span className="text-default-600">Regional Cauca - 2026</span>
         </Link>
       </footer>
     </div>

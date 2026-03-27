@@ -1,9 +1,22 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useUsersStore } from "@/store/users.store";
 import { useTasksStore } from "@/store/tasks.store";
-import mapActivitiesToOptions from "../utils/actividades";
 import mapComponentsToOptions from "../utils/componentes";
 import { truncate } from "../utils/truncate";
+
+type ActivityOptionWithYear = {
+  value: string;
+  label: string;
+  title: string;
+  year: number;
+};
+
+type ProfileActivity = {
+  _id: string;
+  actividad: string;
+  metaAnual: number;
+  year: number;
+};
 
 export default function useProfile(userId: string | null) {
   const { users, getAllUsers } = useUsersStore();
@@ -23,6 +36,7 @@ export default function useProfile(userId: string | null) {
   const [selectedTrimestre, setSelectedTrimestre] = useState<number | null>(
     null
   );
+  const [selectedAnio, setSelectedAnio] = useState<number>(2026);
 
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
     null
@@ -42,11 +56,22 @@ export default function useProfile(userId: string | null) {
     setManualComponentSelection(true);
   };
 
-  // Nuevo useEffect para resetear filtros cuando cambia el userId
-  useEffect(() => {
+  const safeDefaultComponentId = useMemo(() => {
+    if (!lastComponentId) return null;
+
+    const existsInUserComponents = (userComponents ?? []).some(
+      (component: any) => component?._id === lastComponentId
+    );
+
+    return existsInUserComponents ? lastComponentId : null;
+  }, [lastComponentId, userComponents]);
+
+  // Resetea filtros de forma sincrona al cambiar de perfil para evitar fetch con estado previo.
+  useLayoutEffect(() => {
     if (userId) {
       setSelectedEstado(null);
       setSelectedTrimestre(null);
+      setSelectedAnio(2026);
       setSelectedActivityId(null);
       setSelectedComponentId(null);
       setManualComponentSelection(false);
@@ -64,7 +89,7 @@ export default function useProfile(userId: string | null) {
 
     const effectiveComponentId = manualComponentSelection || selectedComponentId
       ? selectedComponentId
-      : (lastComponentId ?? null);
+      : safeDefaultComponentId;
 
     const requestData = {
       responsableId: userId,
@@ -72,28 +97,41 @@ export default function useProfile(userId: string | null) {
     };
 
     getActividadesByResponsable?.(requestData).catch(() => { });
-  }, [userId, selectedComponentId, manualComponentSelection, lastComponentId, getActividadesByResponsable]);
+  }, [
+    userId,
+    selectedComponentId,
+    manualComponentSelection,
+    safeDefaultComponentId,
+    getActividadesByResponsable,
+  ]);
 
   useEffect(() => {
     if (!selectedActivityId) return;
-    const exists = activitiesInProfile?.some((a: any) => a._id === selectedActivityId);
+    const exists = Object.values(activitiesInProfile ?? {}).some((activities) =>
+      activities.some((activity: any) => activity._id === selectedActivityId)
+    );
     if (!exists) setSelectedActivityId(null);
   }, [activitiesInProfile, selectedActivityId]);
 
   useEffect(() => {
     if (!users || users.length === 0) getAllUsers?.();
+  }, [users, getAllUsers]);
 
+  useEffect(() => {
     // Usar userComponents en lugar de components para el componente efectivo
+    if (!userId) return;
+
     const effectiveComponentId =
       manualComponentSelection || selectedComponentId
         ? selectedComponentId
-        : (lastComponentId ?? null);
+        : safeDefaultComponentId;
 
     const query: Record<string, any> = {};
     if (userId) query.responsable = userId;
     if (selectedEstado) query.estado = selectedEstado;
     if (selectedTrimestre !== null && selectedTrimestre !== undefined)
       query.trimestre = Number(selectedTrimestre);
+    query.anio = Number(selectedAnio);
     if (effectiveComponentId) query.componente = effectiveComponentId;
 
     if (selectedActivityId) query.actividad = selectedActivityId;
@@ -103,12 +141,11 @@ export default function useProfile(userId: string | null) {
     userId,
     selectedEstado,
     selectedTrimestre,
+    selectedAnio,
     selectedComponentId,
     manualComponentSelection,
-    lastComponentId,
+    safeDefaultComponentId,
     getAllEvidences,
-    getAllUsers,
-    users,
     selectedActivityId,
   ]);
 
@@ -126,7 +163,7 @@ export default function useProfile(userId: string | null) {
   const effectiveComponentId =
     manualComponentSelection || selectedComponentId
       ? selectedComponentId
-      : (lastComponentId ?? null);
+      : safeDefaultComponentId;
 
   // Cambiar para usar userComponents en lugar de components
   const effectiveComponent = (userComponents ?? []).find(
@@ -136,16 +173,53 @@ export default function useProfile(userId: string | null) {
     ? truncate(effectiveComponent.nombreComponente)
     : "Todos";
 
-  const selectedActivity = activitiesInProfile?.find(
+  const flatActivitiesInProfile = useMemo<ProfileActivity[]>(() => {
+    return Object.entries(activitiesInProfile ?? {})
+      .sort(([yearA], [yearB]) => Number(yearB) - Number(yearA))
+      .flatMap(([year, activities]) =>
+        (activities ?? []).map((activity: any) => ({
+          ...activity,
+          year: Number(year),
+        }))
+      );
+  }, [activitiesInProfile]);
+
+  const selectedActivity = flatActivitiesInProfile.find(
     (a: any) => a._id === selectedActivityId
   );
   const selectedActivityLabel = selectedActivity
     ? truncate(selectedActivity.actividad)
     : "Todas las actividades";
 
-  const activityOptions = mapActivitiesToOptions(activitiesInProfile ?? [], 80);
+  const activityOptions = useMemo<ActivityOptionWithYear[]>(() => {
+    return flatActivitiesInProfile
+      .map((activity) => {
+        const title = activity.actividad ?? "";
+
+        return {
+          value: activity._id,
+          label: truncate(title, 80),
+          title,
+          year: activity.year,
+        };
+      })
+      .sort((a, b) => {
+        const yearDiff = b.year - a.year;
+        if (yearDiff !== 0) return yearDiff;
+
+        return a.title.localeCompare(b.title, "es", { sensitivity: "base" });
+      });
+  }, [flatActivitiesInProfile]);
+
   // Cambiar para usar userComponents en lugar de components
   const componentOptions = mapComponentsToOptions(userComponents ?? [], 50);
+  const yearOptions = useMemo(
+    () => [
+      { value: 2026, label: "2026" },
+      { value: 2025, label: "2025" },
+    ],
+    []
+  );
 
   return {
     user,
@@ -160,6 +234,9 @@ export default function useProfile(userId: string | null) {
     selectActivity,
     selectedEstado,
     setSelectedEstado,
+    selectedAnio,
+    setSelectedAnio,
+    yearOptions,
     selectedTrimestre,
     setSelectedTrimestre,
     isLoading,

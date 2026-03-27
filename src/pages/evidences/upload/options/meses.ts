@@ -25,7 +25,8 @@ export const concurrenciaEvidencia: Option<number>[] = [
 	{ value: 6, label: "Bimestral" },
 	{ value: 3, label: "Cuatrimestral" },	
 	{ value: 10, label: "Decenal" },
-	{ value: 9, label: "Novecenal" }
+	{ value: 9, label: "Novecenal" },
+	{ value: 11, label: "Uncenal" },
 ]
 
 export type ConstanciaEvidencia = typeof concurrenciaEvidencia[number]["value"];

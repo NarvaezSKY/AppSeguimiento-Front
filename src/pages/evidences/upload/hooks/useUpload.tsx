@@ -81,7 +81,6 @@ export function useUpload() {
   useEffect(() => {
     const n = selectedConcurrencia && selectedConcurrencia > 0 ? selectedConcurrencia : 1;
     ensureEntries(n);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedConcurrencia]);
 
   // load components
@@ -118,7 +117,7 @@ export function useUpload() {
       if (mes && Number.isInteger(mes)) {
         next[index].trimestre = getTrimestreFromMes(mes);
         // compute fechaEntrega using form year
-        const anioVal = getValues("anio") ?? "2025";
+        const anioVal = getValues("anio") ?? "2026";
         next[index].fechaEntrega = computeFechaEntrega(mes, Number(anioVal));
       } else {
         next[index].trimestre = null;
