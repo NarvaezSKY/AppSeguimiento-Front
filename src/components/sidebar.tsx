@@ -21,6 +21,7 @@ import { Divider } from "@heroui/react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useUsersStore } from "@/store/users.store";
 import { useTasksStore } from "@/store/tasks.store";
+import { USERS_2025_IDS } from "@/config/config";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -42,9 +43,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
   return (
     <>
-      <aside className="hidden md:flex flex-col h-full w-64 bg-default-100 border-r border-gray-200 pt-20 px-4 fixed z-30 pr-4">
-        <div className="flex flex-col h-screen justify-between mt-10">
-          <nav className="flex flex-col gap-2 flex-1">
+      <aside className="hidden md:flex flex-col w-64 bg-default-100 border-r border-gray-200 px-4 fixed top-[95px] bottom-0 z-30">
+        <div className="flex flex-col flex-1 justify-between overflow-hidden min-h-0 py-4">
+          <nav className="flex flex-col gap-2 flex-1 overflow-y-auto min-h-0 pb-2">
             <h1 className="font-bold text-info">Módulos</h1>
             <Link
               className={`font-semibold text-info hover:text-default-800 underline flex justify-start gap-1 transition-all
@@ -81,34 +82,59 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               Ver todas las evidencias
             </Link>
             <Divider />
-            <Accordion
-              defaultExpandedKeys={["1"]}>
+            <Accordion defaultExpandedKeys={["equipo"]}>
               <AccordionItem
-                key={"1"}
+                key="equipo"
                 aria-label="Equipo"
                 title="Equipo"
-                subtitle={"Ver integrantes de la CMR"}
-                className={"cursor-pointer text-info hover:text-default-800"}
+                subtitle="Ver integrantes de la CMR"
+                className="cursor-pointer text-info hover:text-default-800"
               >
-                {users.map((user) => (
-                  <Link
-                    key={user._id}
-                    aria-label={user.nombre}
-                    title={user.nombre}
-                    onClick={() => clearLastComponentId()}
-                    className={`text-sm mb-1 text-success hover:text-default-800  flex justify-start gap-1 transition-all
+                {(() => {
+                  const users2026 = users.filter((u) => !USERS_2025_IDS.has(u._id));
+                  const users2025 = users.filter((u) => USERS_2025_IDS.has(u._id));
+
+                  const renderUserLink = (user: typeof users[number]) => (
+                    <Link
+                      key={user._id}
+                      aria-label={user.nombre}
+                      title={user.nombre}
+                      onClick={() => clearLastComponentId()}
+                      className={`text-sm mb-1 text-success hover:text-default-800 flex justify-start gap-1 transition-all
     ${currentPath === `/users/${user._id}` ? "bg-success text-white rounded-md py-1 px-1 hover:text-white" : ""}
   `}
-                    style={{ willChange: "transform, color" }}
-                    href={`/users/${user._id}`}
-                  >
-                    <p>{user.nombre}</p>
-                  </Link>
-                ))}
+                      style={{ willChange: "transform, color" }}
+                      href={`/users/${user._id}`}
+                    >
+                      <p>{user.nombre}</p>
+                    </Link>
+                  );
+
+                  return (
+                    <Accordion defaultExpandedKeys={["2026"]}>
+                      <AccordionItem
+                        key="2026"
+                        aria-label="2026"
+                        title="2026"
+                        className="cursor-pointer text-info hover:text-default-800"
+                      >
+                        {users2026.map(renderUserLink)}
+                      </AccordionItem>
+                      <AccordionItem
+                        key="2025"
+                        aria-label="2025"
+                        title="2025"
+                        className="cursor-pointer text-info hover:text-default-800"
+                      >
+                        {users2025.map(renderUserLink)}
+                      </AccordionItem>
+                    </Accordion>
+                  );
+                })()}
               </AccordionItem>
             </Accordion>
           </nav>
-          <div className="mb-[60px] flex flex-col gap-2">
+          <div className="py-1 flex flex-col gap-2 shrink-0">
             <Divider />
             <Button
               className="w-full"
