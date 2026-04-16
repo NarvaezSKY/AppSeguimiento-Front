@@ -7,60 +7,16 @@ import { trimestres } from "../evidences/upload/options/meses";
 import {
   Card,
   CardHeader,
-  Avatar,
   Chip,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
 } from "@heroui/react";
-import EstadoGraphics from "./Components/estadoGraphics";
 import { Divider } from "@heroui/react";
+import { ProfileAvatar } from "@/shared/components/ProfileAvatar";
+import EstadoGraphics from "./Components/estadoGraphics";
 import useProfile from "./hooks/useProfile";
-import pfpEdith from "../../assets/profiles/Edith.png";
-import pfpJuian from "../../assets/profiles/Inge Julian.png";
-import pfpRodrigo from "../../assets/profiles/Rodrigo.png";
-import pfpDiego from "../../assets/profiles/Diego.png";
-import pfpAndrea from "../../assets/profiles/Andrea.png";
-import pfpClaudia from "../../assets/profiles/DoñaClau.png";
-import pfpCarolina from "../../assets/profiles/Carolina.png";
-import pfpVeronica from "../../assets/profiles/Veronica.png";
-import pfpNini from "../../assets/profiles/Nini.jpg";
-import pfpConcepcion from "../../assets/profiles/Concepcion.jpeg";
-
-const PROFILE_IMAGES: Record<string, { src: string; alt: string }> = {
-  "Edith Betancourt Sánchez": { src: pfpEdith, alt: "Edith Betancourt" },
-  "Julián Andrés Garcés Muñoz": { src: pfpJuian, alt: "Julián Andrés Garcés" },
-  "Rodrigo Alberto Montaño Fuentes": {
-    src: pfpRodrigo,
-    alt: "Rodrigo Alberto Montaño",
-  },
-  "Diego Arley Arias Guzman": {
-    src: pfpDiego,
-    alt: "Diego Arley Arias Guzman",
-  },
-  "Luz Andrea Granada Ceballos": {
-    src: pfpAndrea,
-    alt: "Luz Andrea Granada Ceballos",
-  },
-  "Claudia Patricia Giraldo Carmona": {
-    src: pfpClaudia,
-    alt: "Claudia Patricia Giraldo Carmona",
-  },
-  "Carolina Chaves Dueñas": { src: pfpCarolina, alt: "Carolina Chaves Dueñas" },
-  "Veronica Natalia Arenas Garcia": {
-    src: pfpVeronica,
-    alt: "Veronica Natalia Arenas Garcia",
-  },
-  "Nini Johanna Sanchez Velasco": {
-    src: pfpNini,
-    alt: "Nini Johanna Sanchez Velasco",
-  },
-  "Concepción Hurtado Chantre": {
-    src: pfpConcepcion,
-    alt: "Concepción Hurtado Chantre",
-  },
-};
 
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -137,15 +93,12 @@ export default function ProfilePage() {
         {/* Datos del usuario */}
         <Card className="w-full">
           <CardHeader className="flex items-center gap-4">
-            {PROFILE_IMAGES[user.nombre] ? (
-              <img
-                src={PROFILE_IMAGES[user.nombre].src}
-                alt={PROFILE_IMAGES[user.nombre].alt}
-                className="w-32 h-32 rounded-full object-cover border-4 border-primary"
-              />
-            ) : (
-              <Avatar name={user.nombre} size="lg" />
-            )}
+            <ProfileAvatar
+              name={user.nombre}
+              size="lg"
+              imgClassName="w-32 h-32 rounded-full object-cover border-4 border-primary"
+              avatarClassName="w-32 h-32 text-2xl border-4 border-primary"
+            />
             <div>
               <h2 className="text-3xl font-bold">{user.nombre}</h2>
               <div className="flex items-center gap-2 mt-1">

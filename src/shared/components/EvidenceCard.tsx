@@ -7,59 +7,20 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Chip,
-  Avatar,
   Button,
 } from "@heroui/react";
 import { CalendarDays, Target, Users, FileText } from "lucide-react";
 import type { IEvidence } from "../../core/tasks/domain/upload-evidence/upload-evidence.res";
 import { ESTADOS } from "@/pages/evidences/upload/options/estados";
+import { ProfileAvatar } from "@/shared/components/ProfileAvatar";
 import { useTasksStore } from "@/store/tasks.store";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import Modal from "./Modal";
-import pfpEdith from '../../assets/profiles/Edith.png';
-import pfpJuian from '../../assets/profiles/Inge Julian.png';
-import pfpRodrigo from '../../assets/profiles/Rodrigo.png';
-import pfpDiego from '../../assets/profiles/Diego.png';
-import pfpAndrea from '../../assets/profiles/Andrea.png';
-import pfpClaudia from '../../assets/profiles/DoñaClau.png';
-import pfpCarolina from '../../assets/profiles/Carolina.png';
-import pfpVeronica from '../../assets/profiles/Veronica.png';
-import pfpNini from '../../assets/profiles/Nini.jpg';
 
 interface EvidenceCardProps {
   evidence: IEvidence;
 }
-
-const PROFILE_IMAGES: Record<string, { src: string; alt: string }> = {
-  "Edith Betancourt Sánchez": { src: pfpEdith, alt: "Edith Betancourt" },
-  "Julián Andrés Garcés Muñoz": { src: pfpJuian, alt: "Julián Andrés Garcés" },
-  "Rodrigo Alberto Montaño Fuentes": {
-    src: pfpRodrigo,
-    alt: "Rodrigo Alberto Montaño",
-  },
-  "Diego Arley Arias Guzman": {
-    src: pfpDiego,
-    alt: "Diego Arley Arias Guzman",
-  },
-  "Luz Andrea Granada Ceballos": {
-    src: pfpAndrea,
-    alt: "Luz Andrea Granada Ceballos",
-  },
-  "Claudia Patricia Giraldo Carmona": {
-    src: pfpClaudia,
-    alt: "Claudia Patricia Giraldo Carmona",
-  },
-  "Carolina Chaves Dueñas": { src: pfpCarolina, alt: "Carolina Chaves Dueñas" },
-  "Veronica Natalia Arenas Garcia": {
-    src: pfpVeronica,
-    alt: "Veronica Natalia Arenas Garcia",
-  },
-  "Nini Johanna Sanchez Velasco": {
-    src: pfpNini,
-    alt: "Nini Johanna Sanchez Velasco",
-  },
-};
 
 const getStatusColor = (estado: string) => {
   if (!estado) return "default";
@@ -76,15 +37,6 @@ const getStatusColor = (estado: string) => {
     case "no logro":
       return "secondary";
   }
-};
-
-const getInitials = (nombre: string) => {
-  return nombre
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 };
 
 const formatDate = (dateString: string) => {
@@ -314,19 +266,12 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
                 key={responsable._id}
                 className="flex items-center gap-2 bg-default-100 rounded-lg px-3 py-2"
               >
-                {PROFILE_IMAGES[responsable.nombre] ? (
-                  <img 
-                    src={PROFILE_IMAGES[responsable.nombre].src}
-                    alt={PROFILE_IMAGES[responsable.nombre].alt}
-                    className="w-8 h-8 rounded-full object-cover" 
-                  />
-                ) : (
-                  <Avatar
-                    size="sm"
-                    name={getInitials(responsable.nombre)}
-                    className="text-xs"
-                  />
-                )}
+                <ProfileAvatar
+                  name={responsable.nombre}
+                  size="sm"
+                  imgClassName="w-8 h-8 rounded-full object-cover"
+                  avatarClassName="w-8 h-8 text-xs"
+                />
                 <div className="flex flex-col">
                   <span className="text-xs font-medium">
                     {responsable.nombre}
