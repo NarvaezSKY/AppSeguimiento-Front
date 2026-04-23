@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import DefaultLayout from "@/layouts/default";
-import { EvidenceCard } from "@/shared/components/EvidenceCard";
+import { EvidenceCard } from "@/shared/components/EvidenceCard/EvidenceCard";
+import { EvidenceCardSkeleton } from "@/shared/components/EvidenceCardSkeleton";
+import { ProfileInfoSkeleton } from "@/shared/components/ProfileInfoSkeleton";
 import { ESTADOS } from "../evidences/upload/options/estados";
 import { trimestres } from "../evidences/upload/options/meses";
 import {
@@ -77,7 +79,7 @@ export default function ProfilePage() {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [userId]);
 
-  if (!user) {
+  if (!user && !isLoading) {
     return (
       <DefaultLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -91,25 +93,29 @@ export default function ProfilePage() {
     <DefaultLayout>
       <section className="max-w-4xl mx-auto py-10 flex flex-col gap-8">
         {/* Datos del usuario */}
-        <Card className="w-full">
-          <CardHeader className="flex items-center gap-4">
-            <ProfileAvatar
-              name={user.nombre}
-              size="lg"
-              imgClassName="w-32 h-32 rounded-full object-cover border-4 border-primary"
-              avatarClassName="w-32 h-32 text-2xl border-4 border-primary"
-            />
-            <div>
-              <h2 className="text-3xl font-bold">{user.nombre}</h2>
-              <div className="flex items-center gap-2 mt-1">
-                <Chip color="primary" className="text-white" size="sm">
-                  {user.vinculacion}
-                </Chip>
-                <span className="text-gray-500 text-sm">{user.email}</span>
+        {isLoading ? (
+          <ProfileInfoSkeleton />
+        ) : (
+          <Card className="w-full">
+            <CardHeader className="flex items-center gap-4">
+              <ProfileAvatar
+                name={user.nombre}
+                size="lg"
+                imgClassName="w-32 h-32 rounded-full object-cover border-4 border-primary"
+                avatarClassName="w-32 h-32 text-2xl border-4 border-primary"
+              />
+              <div>
+                <h2 className="text-3xl font-bold">{user.nombre}</h2>
+                <div className="flex items-center gap-2 mt-1">
+                  <Chip color="primary" className="text-white" size="sm">
+                    {user.vinculacion}
+                  </Chip>
+                  <span className="text-gray-500 text-sm">{user.email}</span>
+                </div>
               </div>
-            </div>
-          </CardHeader>
-        </Card>
+            </CardHeader>
+          </Card>
+        )}
 
         {/* Filtros: ahora los títulos están dentro de cada Dropdown para ahorrar espacio */}
         <div className="flex items-center gap-4 flex-wrap">
@@ -277,9 +283,9 @@ export default function ProfilePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {isLoading ? (
-            <div className="col-span-full text-center text-gray-400 py-8">
-              Cargando evidencias...
-            </div>
+            Array.from({ length: 4 }).map((_, index) => (
+              <EvidenceCardSkeleton key={`evidence-skeleton-${index}`} />
+            ))
           ) : userEvidences.length === 0 ? (
             <div className="col-span-full text-center text-gray-400 py-8">
               No hay evidencias para este usuario.
@@ -290,8 +296,12 @@ export default function ProfilePage() {
             ))
           )}
         </div>
-        <Divider />
-        <EstadoGraphics evidences={userEvidences} />
+        {!isLoading && (
+          <>
+            <Divider />
+            <EstadoGraphics evidences={userEvidences} />
+          </>
+        )}
       </section>
     </DefaultLayout>
   );

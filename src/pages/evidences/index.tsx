@@ -5,7 +5,7 @@ import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/r
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import EvidenceModal from "./components/Modal";
-import { EvidenceCard } from "@/shared/components/EvidenceCard";
+import { EvidenceCard } from "@/shared/components/EvidenceCard/EvidenceCard";
 
 export default function IndexPage() {
   const {
