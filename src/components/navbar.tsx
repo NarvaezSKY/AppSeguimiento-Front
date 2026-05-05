@@ -10,12 +10,9 @@ import {
 import LogoSENA from "/white_icon.png";
 import LogoSeguimiento from '../assets/Logo.png'
 import LogoCMR from '../assets/CMR.png'
-import pfpEdith from "../assets/profiles/Edith.png";
-import pfpJulian from "../assets/profiles/Inge Julian.png";
-
 import { ThemeSwitch } from "@/components/theme-switch";
 import { useAuthStore } from "@/store/auth.store";
-import { Chip } from "@heroui/react";
+import { ProfileLink } from "@/components/ProfileLink";
 
 export const Navbar = () => {
   const user = useAuthStore((s) => s.user);
@@ -49,22 +46,7 @@ export const Navbar = () => {
         <NavbarItem className="gap-2 max-w-fit mr-4">
           {user && (
             <div className="flex items-center gap-2">
-              <Link
-                className="flex justify-end items-center gap-1"
-                color="foreground"
-                href={user.email?.includes("jgarces") ? "/users/68ba075327e5ac74d4a5572a" : "/users/68ba073327e5ac74d4a55726"}
-              >
-                <img
-                  src={user.email?.includes("jgarces") ? pfpJulian : pfpEdith}
-                  alt={user.name}
-                  className="w-14 h-14 rounded-full border-primary border-2"
-                />
-                <div>
-                  <p className="font-bold text-white text-xl">{user.name}</p>
-                  <Chip variant="solid" color="primary" size="sm" className="text-white">Administrador</Chip>
-
-                </div>
-              </Link>
+              <ProfileLink name={user.name} email={user.email} />
             </div>
           )}
         </NavbarItem>
