@@ -1,6 +1,7 @@
 import { Link } from "@heroui/link";
 import { Chip } from "@heroui/react";
 
+import pfpEdith from "../assets/profiles/Edith.png";
 import pfpJulian from "../assets/profiles/Inge Julian.png";
 import pfpRodrigo from "../assets/profiles/Rodrigo.png";
 
@@ -10,6 +11,10 @@ interface ProfileConfig {
 }
 
 const PROFILE_MAP: Record<string, ProfileConfig> = {
+  edith: {
+    image: pfpEdith,
+    userId: "68ba073327e5ac74d4a55726",
+  },
   jgarces: {
     image: pfpJulian,
     userId: "68ba075327e5ac74d4a5572a",
