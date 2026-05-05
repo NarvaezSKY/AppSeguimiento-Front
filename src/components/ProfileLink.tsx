@@ -11,7 +11,7 @@ interface ProfileConfig {
 }
 
 const PROFILE_MAP: Record<string, ProfileConfig> = {
-  edith: {
+  ebetancourts: {
     image: pfpEdith,
     userId: "68ba073327e5ac74d4a55726",
   },
