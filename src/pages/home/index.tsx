@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { useState } from "react";
 import DefaultLayout from "@/layouts/default";
 import useHome from "./hooks/useHome";
@@ -9,6 +10,7 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  Divider,
 } from "@heroui/react";
 import { FaTasks } from "react-icons/fa";
 import { IoIosFolderOpen } from "react-icons/io";
@@ -18,9 +20,20 @@ import UploadComponentForm from "./components/UploadComponentForm";
 import { useTasksStore } from "@/store/tasks.store";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { EvidenceCard } from "@/shared/components/EvidenceCard/EvidenceCard";
 
 export default function IndexPage() {
-  const { components, refresh } = useHome();
+  const {
+    components,
+    refresh,
+    dueMonthLabel,
+    dashboardEvidences,
+    upcomingEvidences,
+    overdueEvidences,
+    overdueCount,
+    isDashboardLoading,
+    refreshEvidencesDashboard,
+  } = useHome();
   const deleteComponent = useTasksStore((s) => (s as any).deleteComponent);
   const { setLastComponentId } = useTasksStore();
   const [openCreate, setOpenCreate] = useState(false);
@@ -39,7 +52,7 @@ export default function IndexPage() {
         toast.success("Componente eliminado");
         try {
           await refresh();
-        } catch { }
+        } catch {}
       } catch {
         toast.error("Error al eliminar componente");
       }
@@ -47,6 +60,7 @@ export default function IndexPage() {
       toast.error("Función de eliminar no implementada en el store");
     }
   };
+
 
   const colorTokens = [
     "success",
@@ -69,22 +83,6 @@ export default function IndexPage() {
     info: "text-info bg-info/20",
   };
 
-  // // Función hash mejorada para mejor distribución
-  // const stringToIndex = (s: string | undefined, len: number) => {
-  //   if (!s) return 0;
-  //   let hash = 0;
-  //   // Usamos una combinación de algoritmos para mejor distribución
-  //   for (let i = 0; i < s.length; i++) {
-  //     const char = s.charCodeAt(i);
-  //     hash = ((hash << 5) - hash) + char;
-  //     hash = hash & hash; // Convertir a 32-bit integer
-  //   }
-  //   // Agregamos más entropia usando la longitud del string
-  //   hash = hash + s.length * 31;
-  //   return Math.abs(hash) % len;
-  // };
-
-  // Alternativa: usar el índice del array directamente para garantizar colores únicos
   const getColorByIndex = (index: number) => {
     return colorTokens[index % colorTokens.length];
   };
@@ -92,7 +90,90 @@ export default function IndexPage() {
   return (
     <DefaultLayout>
       <section className="flex flex-col items-center gap-6 py-8 md:py-10 w-full bg-default-100 rounded">
-        <div className="flex justify-between w-full max-w-2xl mb-7 px-4 gap-2">
+        <Card className="w-full max-w-5xl mx-auto p-5 shadow-medium border border-default-200">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-semibold text-warning-800">
+                  Compromisos próximos a vencer
+                </h3>
+                <p className="text-sm text-warning-700/90">
+                  Evidencias en estado 'Por entregar' acumuladas de {dueMonthLabel}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="flat"
+                color="warning"
+                onClick={refreshEvidencesDashboard}
+                isLoading={isDashboardLoading}
+              >
+                Actualizar
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Card className="p-3 bg-white/80 shadow-none border border-default-200">
+                <p className="text-xs uppercase text-default-500">
+                  Por entregar este mes
+                </p>
+                <p className="text-2xl font-bold">
+                  {dashboardEvidences.length}
+                </p>
+              </Card>
+              <Card className="p-3 bg-white/80 shadow-none border border-default-200">
+                <p className="text-xs uppercase text-default-500">
+                  Proximas a vencer
+                </p>
+                <p className="text-2xl font-bold text-warning">
+                  {upcomingEvidences.length}
+                </p>
+              </Card>
+              <Card className="p-3 bg-white/80 shadow-none border border-default-200">
+                <p className="text-xs uppercase text-default-500">Vencidas</p>
+                <p className="text-2xl font-bold text-danger">{overdueCount}</p>
+              </Card>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-default-700">
+                Proximas a vencer
+              </p>
+
+              {!isDashboardLoading && upcomingEvidences.length === 0 && (
+                <p className="text-sm text-default-500">
+                  No hay evidencias proximas a vencer.
+                </p>
+              )}
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {upcomingEvidences.map((evidence) => (
+                  <EvidenceCard key={evidence._id} evidence={evidence} />
+                ))}
+              </div>
+            </div>
+            <Divider/>
+
+            <div className="flex flex-col gap-2">
+              <p className="text-xl font-medium text-default-700">Vencidas</p>
+
+              {!isDashboardLoading && overdueEvidences.length === 0 && (
+                <p className="text-sm text-default-500">
+                  No hay evidencias vencidas.
+                </p>
+              )}
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {overdueEvidences.map((evidence) => (
+                  <EvidenceCard key={evidence._id} evidence={evidence} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </Card>
+        <Divider className="max-w-5xl"/>
+
+        <div className="flex justify-between w-full max-w-5xl mb-2 px-4 gap-2">
           <h1 className="text-4xl font-semibold">Componentes</h1>
           <Button
             color="primary"
@@ -108,7 +189,7 @@ export default function IndexPage() {
         {components.map((c: any, index) => {
           // Opción 1: Usar índice del array (garantiza colores únicos secuenciales)
           const colorToken = getColorByIndex(index);
-          
+
           const colorClasses = colorMap[colorToken as keyof typeof colorMap];
 
           return (
@@ -121,7 +202,7 @@ export default function IndexPage() {
             >
               <Card
                 key={c._id}
-                className="w-full max-w-2xl mx-auto shadow-medium hover:shadow-large transition-shadow duration-200 cursor-pointer"
+                className="w-full max-w-5xl mx-auto shadow-medium hover:shadow-large transition-shadow duration-200 cursor-pointer"
               >
                 <div className="p-6 flex items-center">
                   <div className="flex items-center gap-1 mr-4">
@@ -158,7 +239,7 @@ export default function IndexPage() {
                       <IoIosFolderOpen size={24} />
                     </span>
                   </div>
-                  <h2 className="text-2xl font-semibold mb-0 max-w-xl truncate">
+                  <h2 className="text-2xl font-semibold mb-0 w-full truncate">
                     {c.nombreComponente}
                   </h2>
                 </div>
@@ -170,7 +251,7 @@ export default function IndexPage() {
         <Link href="/evidences" isExternal={false}>
           <Button color="success" variant="light" className="px-4 py-2">
             <FaTasks className="mr-2" />
-            Ver todas las evidencias
+            Ver todos los compromisos
           </Button>
         </Link>
 

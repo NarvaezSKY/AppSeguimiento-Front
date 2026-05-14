@@ -288,7 +288,7 @@ export default function ProfilePage() {
             ))
           ) : userEvidences.length === 0 ? (
             <div className="col-span-full text-center text-gray-400 py-8">
-              No hay evidencias para este usuario.
+              No hay compromisos para este usuario.
             </div>
           ) : (
             userEvidences.map((ev) => (

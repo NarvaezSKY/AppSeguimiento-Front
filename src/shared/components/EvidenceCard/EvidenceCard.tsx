@@ -54,16 +54,32 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
       estado === "Entrega extemporanea") &&
     entregadoEn;
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const dueDate = new Date(evidence.fechaEntrega);
+  dueDate.setHours(0, 0, 0, 0);
+
+  const daysUntilDue = Math.ceil(
+    (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  );
+  const dueText =
+    daysUntilDue >= 0
+      ? `Vence en ${daysUntilDue} dias`
+      : `Vencio hace ${Math.abs(daysUntilDue)} dias`;
+
+  const showDueText = estado.trim().toLowerCase() === "por entregar";
+
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-medium hover:shadow-large transition-shadow duration-200">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-lg mb-1 text-balance">
-              {evidence.actividad.componente.nombreComponente}
+              {evidence.actividad.actividad}
             </h3>
             <p className="text-sm text-default-500 text-pretty truncate line-clamp-5">
-              {evidence.actividad.actividad}
+              {evidence.actividad.componente.nombreComponente}
             </p>
           </div>
           <Chip
@@ -151,6 +167,15 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             <div className="text-xs text-warning">
               <span>Entrega hasta: {formatDate(evidence.fechaEntrega)}</span>
             </div>
+            {showDueText && (
+              <div
+                className={`text-xs ${
+                  daysUntilDue >= 0 ? "text-warning-600" : "text-danger"
+                }`}
+              >
+                <span>{dueText}</span>
+              </div>
+            )}
             {mostrarEntregadoEn && (
               <div className="text-xs text-success-600">
                 <span>Entregada en: {formatDate(entregadoEn as string)}</span>

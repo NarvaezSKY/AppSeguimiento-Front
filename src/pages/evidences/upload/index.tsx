@@ -107,7 +107,7 @@ export default function UploadForm() {
 
             {/* Dynamic entries for each evidence (mes, trimestre, fechaEntrega calculada) */}
             <div>
-              <label className="block text-sm text-default-500 mb-2">Evidencias</label>
+              <label className="block text-sm text-default-500 mb-2">Compromisos</label>
               <div className="flex flex-col gap-2">
                 {(evidenceEntries ?? []).map((entry, idx) => (
                   <div key={idx} className="grid grid-cols-3 gap-2 items-end">

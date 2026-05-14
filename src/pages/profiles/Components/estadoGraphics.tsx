@@ -65,7 +65,7 @@ export default function EstadoGraphics({
 }: {
   evidences?: IEvidence[];
 }) {
-  // fallback al store si no se pasan evidencias por prop
+  // fallback al store si no se pasan compromisos por prop
   const storeEvidences = useTasksStore((s) => s.evidences ?? []);
   const evidences = propEvidences ?? storeEvidences;
 
@@ -122,7 +122,7 @@ export default function EstadoGraphics({
               role="img"
               aria-label="Gráfico de estados"
             >
-              <title>Distribución de evidencias por estado</title>
+              <title>Distribución de compromisos por estado</title>
               {data.total === 0 ? (
                 <circle cx={CENTER} cy={CENTER} r={RADIUS} className="text-default-300 fill-current" />
               ) : (
@@ -198,7 +198,7 @@ export default function EstadoGraphics({
 
               {data.total === 0 && (
                 <div className="text-sm text-default-500">
-                  No hay evidencias registradas.
+                  No hay compromisos registrados.
                 </div>
               )}
             </div>

@@ -69,7 +69,7 @@ export default function IndexPage() {
       <section className="flex flex-col items-center gap-6 py-8 md:py-10 w-full">
         <div className="w-full max-w-6xl px-4">
           <header className="flex items-center justify-between mb-6">
-            <h1 className="text-4xl font-semibold">Evidencias</h1>
+            <h1 className="text-4xl font-semibold">Compromisos</h1>
 
             <div className="flex items-center gap-3">
               {error && (
@@ -126,7 +126,7 @@ export default function IndexPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {evidences.length === 0 && !isLoading ? (
               <div className="col-span-full text-center text-gray-500 py-8 border rounded-lg bg-white/60">
-                No hay evidencias disponibles.
+                No hay compromisos disponibles.
               </div>
             ) : null}
 

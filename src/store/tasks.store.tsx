@@ -359,7 +359,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
         error:
           err?.response?.data?.message ||
           err?.message ||
-          "Error al obtener evidencias",
+          "Error al obtener compromisos",
       });
       throw err;
     }
@@ -378,7 +378,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
         error:
           err?.response?.data?.message ||
           err?.message ||
-          "Error al obtener evidencias",
+          "Error al obtener compromisos",
       });
       throw err;
     }

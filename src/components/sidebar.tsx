@@ -71,7 +71,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               href="/evidences/upload"
             >
               <FaCalendarPlus className="w-4 h-4" />
-              Subir nueva evidencia
+              Crear compromiso
             </Link>
             <Link
               className={`font-semibold text-info hover:text-default-800 underline flex justify-start gap-1 transition-all 
@@ -79,7 +79,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               href="/evidences"
             >
               <FaCalendarCheck className="w-4 h-4" />
-              Ver todas las evidencias
+              Ver compromisos
             </Link>
             <Divider />
             <Accordion defaultExpandedKeys={["equipo"]}>

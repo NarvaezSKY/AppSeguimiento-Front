@@ -184,7 +184,7 @@ export function useUpload() {
         .map((e, idx) => `#${idx + 1}: mes=${e.mes}, trimestre=${e.trimestre}, fechaEntrega=${e.fechaEntrega}`)
         .join("\n");
       const confirmed = window.confirm(
-        `Se crearán ${entries.length} evidencias para esta actividad:\n\n${summary}\n\n¿Continuar?`
+        `Se crearán ${entries.length} compromisos para esta actividad:\n\n${summary}\n\n¿Continuar?`
       );
       if (!confirmed) return;
     }

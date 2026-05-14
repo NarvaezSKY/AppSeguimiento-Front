@@ -16,7 +16,7 @@ export const UsersByComponent = () => {
     <DefaultLayout>
       <section className="max-w-4xl mx-auto py-10 flex flex-col gap-8">
         <h2 className="text-2xl font-bold mb-6">
-          Usuarios con evidencias en el componente:
+          Usuarios con compromisos en el componente:
         </h2>
         {isLoadingUsersByComponent ? (
           <div className="text-center text-default-500 py-8">
