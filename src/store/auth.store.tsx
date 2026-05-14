@@ -23,14 +23,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   verifyError: null,
   login: async (email, password) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, verifyError: null });
     try {
       const login = loginUseCase(authRepository);
       const result = await login({ email, password });
       if (result?.data?.token) {
         sessionStorage.setItem("token", result.data.token);
       }
-      set({ isLoading: false, user: result.data });
+      set({ isLoading: false, user: result.data, verifyError: null });
       return result;
     } catch (err: any) {
       set({
@@ -68,10 +68,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, verifyError: null });
     try {
       sessionStorage.removeItem("token");
-      set({ isLoading: false, user: null });
+      set({ isLoading: false, user: null, verifyError: null });
     } catch (err: any) {
       set({ isLoading: false, error: err.message || "Error al cerrar sesión" });
       throw err;
@@ -80,6 +80,11 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   initialize: async () => {
     const token = sessionStorage.getItem("token");
+    if (!token) {
+      set({ verifyError: null, isLoading: false, user: null });
+      return;
+    }
+
     if (token) {
       try {
         set({ isLoading: true });

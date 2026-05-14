@@ -1,4 +1,4 @@
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import IndexPage from "@/pages/evidences/index";
 import LoginPage from "./pages/login/login";
@@ -14,24 +14,27 @@ import { PowerBIReport } from "./pages/PowerBI";
 
 function App() {
   const navigate = useNavigate();
+  const location = useLocation();
   const initialize = useAuthStore((s) => s.initialize);
   const verifyError = useAuthStore((s) => s.verifyError);
+  const token = sessionStorage.getItem("token");
+  const isLoginRoute = location.pathname === "/login";
 
   useEffect(() => {
-    // Solo inicializamos si NO estamos en la ruta de login
-    if (window.location.pathname === '/login') return;
+    // Solo inicializamos si NO estamos en login y existe token
+    if (isLoginRoute || !token) return;
 
     initialize().catch(() => {
       navigate('/login', { replace: true });
     });
-  }, [initialize, navigate]); // <-- run once on mount
+  }, [initialize, isLoginRoute, navigate, token]);
 
   // Redirigir a login si hay error de verificación
   useEffect(() => {
-    if (verifyError && window.location.pathname !== '/login') {
+    if (verifyError && !isLoginRoute) {
       navigate('/login', { replace: true });
     }
-  }, [verifyError, navigate]);
+  }, [verifyError, isLoginRoute, navigate]);
 
   return (
     <Suspense fallback={
