@@ -4,7 +4,7 @@ import IndexPage from "@/pages/evidences/index";
 import LoginPage from "./pages/login/login";
 import ProtectedRoute from "./ProtectedRoute";
 import HomePage from "./pages/home";
-import { useEffect, Suspense } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { useAuthStore } from "./store/auth.store";
 import { PublicRoute } from "./PublicRoute";
 import UploadForm from "./pages/evidences/upload";
@@ -17,17 +17,20 @@ function App() {
   const location = useLocation();
   const initialize = useAuthStore((s) => s.initialize);
   const verifyError = useAuthStore((s) => s.verifyError);
-  const token = sessionStorage.getItem("token");
   const isLoginRoute = location.pathname === "/login";
+  const initialized = useRef(false);
 
   useEffect(() => {
-    // Solo inicializamos si NO estamos en login y existe token
-    if (isLoginRoute || !token) return;
+    const token = sessionStorage.getItem("token");
+    // Solo inicializamos una vez si NO estamos en login y existe token
+    if (isLoginRoute || !token || initialized.current) return;
+    initialized.current = true;
 
     initialize().catch(() => {
       navigate('/login', { replace: true });
     });
-  }, [initialize, isLoginRoute, navigate, token]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Redirigir a login si hay error de verificación
   useEffect(() => {

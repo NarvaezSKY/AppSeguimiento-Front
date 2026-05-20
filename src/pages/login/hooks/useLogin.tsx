@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 export function useLogin() {
   const login = useAuthStore((state) => state.login);
+  const initialize = useAuthStore((state) => state.initialize);
   const isLoading = useAuthStore((state) => state.isLoading);
   const error = useAuthStore((state) => state.error);
   const navigate = useNavigate();
@@ -14,8 +15,11 @@ export function useLogin() {
     try {
       // 1. Primero autenticamos
       await login(email, password);
-      
-      // 2. Precargamos datos necesarios ANTES de navegar
+
+      // 2. Obtenemos el perfil completo del usuario (verify) para poblar el store
+      await initialize();
+
+      // 3. Precargamos datos necesarios ANTES de navegar
       try {
         await getAllUsers();
       } catch (userErr) {
