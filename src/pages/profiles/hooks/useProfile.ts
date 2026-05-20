@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useUsersStore } from "@/store/users.store";
 import { useTasksStore } from "@/store/tasks.store";
+import { IGetAllEvidencesReq } from "@/core/tasks/domain/get-evidences";
 import mapComponentsToOptions from "../utils/componentes";
 import { truncate } from "../utils/truncate";
 
@@ -36,6 +37,7 @@ export default function useProfile(userId: string | null) {
   const [selectedTrimestre, setSelectedTrimestre] = useState<number | null>(
     null
   );
+  const [selectedMes, setSelectedMes] = useState<number | null>(null);
   const [selectedAnio, setSelectedAnio] = useState<number>(2026);
 
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
@@ -71,6 +73,7 @@ export default function useProfile(userId: string | null) {
     if (userId) {
       setSelectedEstado(null);
       setSelectedTrimestre(null);
+      setSelectedMes(null);
       setSelectedAnio(2026);
       setSelectedActivityId(null);
       setSelectedComponentId(null);
@@ -126,9 +129,11 @@ export default function useProfile(userId: string | null) {
         ? selectedComponentId
         : safeDefaultComponentId;
 
-    const query: Record<string, any> = {};
+    const query: IGetAllEvidencesReq = {};
     if (userId) query.responsable = userId;
     if (selectedEstado) query.estado = selectedEstado;
+    if (selectedMes !== null && selectedMes !== undefined)
+      query.mes = Number(selectedMes);
     if (selectedTrimestre !== null && selectedTrimestre !== undefined)
       query.trimestre = Number(selectedTrimestre);
     query.anio = Number(selectedAnio);
@@ -140,6 +145,7 @@ export default function useProfile(userId: string | null) {
   }, [
     userId,
     selectedEstado,
+    selectedMes,
     selectedTrimestre,
     selectedAnio,
     selectedComponentId,
@@ -237,6 +243,8 @@ export default function useProfile(userId: string | null) {
     selectedAnio,
     setSelectedAnio,
     yearOptions,
+    selectedMes,
+    setSelectedMes,
     selectedTrimestre,
     setSelectedTrimestre,
     isLoading,

@@ -5,7 +5,7 @@ import { EvidenceCard } from "@/shared/components/EvidenceCard/EvidenceCard";
 import { EvidenceCardSkeleton } from "@/shared/components/EvidenceCardSkeleton";
 import { ProfileInfoSkeleton } from "@/shared/components/ProfileInfoSkeleton";
 import { ESTADOS } from "../evidences/upload/options/estados";
-import { trimestres } from "../evidences/upload/options/meses";
+import { MESES, trimestres } from "../evidences/upload/options/meses";
 import {
   Card,
   CardHeader,
@@ -39,6 +39,8 @@ export default function ProfilePage() {
     selectedAnio,
     setSelectedAnio,
     yearOptions,
+    selectedMes,
+    setSelectedMes,
     selectedTrimestre,
     setSelectedTrimestre,
     isLoading,
@@ -243,6 +245,35 @@ export default function ProfilePage() {
               aria-label="Filtrar por año"
               items={yearOptions ?? []}
               onAction={(key) => setSelectedAnio(Number(key))}
+            >
+              {(item) => (
+                <DropdownItem key={item.value}>{item.label}</DropdownItem>
+              )}
+            </DropdownMenu>
+          </Dropdown>
+
+          <Dropdown>
+            <DropdownTrigger>
+              <button className="px-3 py-2 border rounded flex items-center gap-2 min-w-[170px]">
+                <div className="flex-1 text-left">
+                  <div className="text-xs text-gray-500 leading-none">
+                    Mes
+                  </div>
+                  <div className="truncate">
+                    {selectedMes
+                      ? MESES.find((m) => m.value === selectedMes)?.label
+                      : "Todos los meses"}
+                  </div>
+                </div>
+                <span className="text-sm opacity-70">▼</span>
+              </button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label="Filtrar por mes"
+              items={[{ value: "all-month", label: "Todos" }, ...MESES]}
+              onAction={(key) =>
+                setSelectedMes(key === "all-month" ? null : Number(key))
+              }
             >
               {(item) => (
                 <DropdownItem key={item.value}>{item.label}</DropdownItem>
