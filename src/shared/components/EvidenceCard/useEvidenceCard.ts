@@ -1,16 +1,44 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import type { IEvidence } from "../../../core/tasks/domain/upload-evidence/upload-evidence.res";
 import { useTasksStore } from "@/store/tasks.store";
+import { useUsersStore } from "@/store/users.store";
+import { USERS_2025_IDS } from "@/config/config";
 import { toast } from "sonner";
+import { User } from "@/core/users/domain/get-all-users";
 
 export function useEvidenceCard(evidence: IEvidence) {
-  const { updateEvidence, updatingEvidenceIds } = useTasksStore();
+  const {
+    updateEvidence,
+    updatingEvidenceIds,
+    updateEvidenceResponsables,
+    patchEvidenceInStore,
+  } = useTasksStore();
+  const { users, isLoading: isLoadingUsers, getAllUsers } = useUsersStore();
   const [error, setError] = useState<string | null>(null);
   const [estado, setEstado] = useState(evidence.estado);
   const [entregadoEn, setEntregadoEn] = useState(evidence.entregadoEn ?? null);
   const [justificacion, setJustificacion] = useState<string | null>(
     (evidence as any).justificacion ?? null
   );
+  const [responsables, setResponsables] = useState(evidence.responsables || []);
+  const [responsablesModalOpen, setResponsablesModalOpen] = useState(false);
+  const [confirmResponsablesModalOpen, setConfirmResponsablesModalOpen] =
+    useState(false);
+  const [confirmAction, setConfirmAction] = useState<"cancel" | "save" | null>(
+    null
+  );
+  const [availableResponsables, setAvailableResponsables] = useState<User[]>([]);
+  const [selectedResponsables, setSelectedResponsables] = useState<User[]>([]);
+
+  // Carga usuarios si aún no están disponibles (ej: navegación directa a /evidences)
+  useEffect(() => {
+    if (!users || users.length === 0) {
+      getAllUsers();
+    }
+  }, []);
+
+  // Derivado: solo muestra carga mientras no hay usuarios y el store está cargando
+  const isLoadingResponsables = isLoadingUsers && users.length === 0;
 
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingEstado, setPendingEstado] = useState<string | null>(null);
@@ -136,26 +164,121 @@ export function useEvidenceCard(evidence: IEvidence) {
 
   const maxDate = new Date().toISOString().split("T")[0];
 
+  const openResponsablesModal = () => {
+    setError(null);
+    // Solo usuarios del equipo 2026 (excluye los de 2025 por USERS_2025_IDS)
+    const users2026 = users.filter((u) => !USERS_2025_IDS.has(u._id));
+    setAvailableResponsables(users2026);
+    setSelectedResponsables(responsables);
+    setResponsablesModalOpen(true);
+  };
+
+  const handleAddResponsable = (user: User) => {
+    setSelectedResponsables((prev) => {
+      if (prev.some((u) => u._id === user._id)) return prev;
+      return [...prev, user];
+    });
+  };
+
+  const handleRemoveResponsable = (userId: string) => {
+    setSelectedResponsables((prev) => prev.filter((u) => u._id !== userId));
+  };
+
+  const askConfirmCancelResponsables = () => {
+    setConfirmAction("cancel");
+    setConfirmResponsablesModalOpen(true);
+  };
+
+  const askConfirmSaveResponsables = () => {
+    if (selectedResponsables.length === 0) {
+      toast.error("Debe existir al menos un encargado para guardar");
+      return;
+    }
+    setConfirmAction("save");
+    setConfirmResponsablesModalOpen(true);
+  };
+
+  const handleConfirmResponsablesAction = async () => {
+    if (confirmAction === "cancel") {
+      setConfirmResponsablesModalOpen(false);
+      setResponsablesModalOpen(false);
+      setSelectedResponsables([]);
+      return;
+    }
+
+    if (confirmAction === "save") {
+      try {
+        await updateEvidenceResponsables({
+          id: evidence._id,
+          responsables: selectedResponsables.map((u) => u._id),
+        });
+
+        patchEvidenceInStore?.({
+          _id: evidence._id,
+          responsables: selectedResponsables,
+        } as IEvidence);
+
+        setResponsables(selectedResponsables);
+        setResponsablesModalOpen(false);
+        setConfirmResponsablesModalOpen(false);
+        toast.success("Responsables actualizados");
+      } catch (err: any) {
+        setError(
+          err?.response?.data?.message ||
+            err?.message ||
+            "Error al actualizar responsables"
+        );
+      }
+    }
+  };
+
+  const confirmModalTitle =
+    confirmAction === "cancel"
+      ? "Confirmar cancelación"
+      : "Confirmar actualización";
+
+  const confirmModalText =
+    confirmAction === "cancel"
+      ? "¿Deseas cancelar los cambios de responsables?"
+      : "¿Deseas guardar los responsables seleccionados para esta evidencia?";
+
   return {
     error,
     estado,
     entregadoEn,
     justificacion,
+    responsables,
     modalOpen,
+    responsablesModalOpen,
+    confirmResponsablesModalOpen,
+    confirmAction,
     pendingEstado,
     selectedDate,
     selectedJustificacion,
     loading,
+    availableResponsables,
+    selectedResponsables,
+    isLoadingResponsables,
     isNoLogro,
     maxDate,
     modalTitle,
+    confirmModalTitle,
+    confirmModalText,
     isEntregaExtemporaneaPorFecha,
     setModalOpen,
     setPendingEstado,
     setSelectedDate,
     setSelectedJustificacion,
+    setResponsablesModalOpen,
+    setConfirmResponsablesModalOpen,
     handleChangeEstado,
     handleModalConfirm,
+    openResponsablesModal,
+    handleAddResponsable,
+    handleRemoveResponsable,
+    askConfirmCancelResponsables,
+    askConfirmSaveResponsables,
+    handleConfirmResponsablesAction,
   };
 }
 

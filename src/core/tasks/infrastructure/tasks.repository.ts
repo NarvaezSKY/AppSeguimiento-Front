@@ -6,6 +6,7 @@ import { IGetAllEvidencesReq } from "../domain/get-evidences";
 import { IUploadActivityReq } from "../domain/upload-activity";
 import { IUpdateEvidenceReq } from "../domain/update-evidence";
 import { IGetActividadesByResponsableReq } from "../domain/get-actividades-by-responsable";
+import { IUpdateEvidenceResponsablesReq } from "../domain/update-evidence-responsables";
 
 const uploadComponent = async (data: IUploadComponentReq) => {
     try {
@@ -82,6 +83,18 @@ const updateEvidence = async (data: IUpdateEvidenceReq) => {
     }
 }
 
+const updateEvidenceResponsables = async (data: IUpdateEvidenceResponsablesReq) => {
+    try {
+        const response = await axiosInstance.patch(`/evidencias/${data.id}/responsables`, {
+            responsables: data.responsables,
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error during updateEvidenceResponsables:", error);
+        throw error;
+    }
+}
+
 const getUsersByComponent = async (componentId: string) => {
     try {
         const response = await axiosInstance.get(`/componentes/${componentId}/responsables`);
@@ -124,6 +137,7 @@ export const tasksRepository: ITasksRepository = {
     getUniqueComponents,
     uploadActivity,
     updateEvidence,
+    updateEvidenceResponsables,
     getActividadesByResponsable,
     getComponentsByResponsable
 };

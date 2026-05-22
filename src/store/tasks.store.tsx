@@ -9,6 +9,7 @@ import {
   getUsersByComponentUseCase,
   getActividadesByResponsableUseCase,
   getComponentsByResponsableUseCase,
+  updateEvidenceResponsablesUseCase,
 } from "@/core/tasks/application";
 import { tasksRepository } from "@/core/tasks/infrastructure/tasks.repository";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@/core/tasks/domain/upload-evidence/upload-evidence.res";
 import { IComponents } from "@/core/tasks/domain/get-components/get-components.res";
 import { IGetAllEvidencesReq } from "@/core/tasks/domain/get-evidences";
+import { IUpdateEvidenceResponsablesReq } from "@/core/tasks/domain/update-evidence-responsables";
 
 import { IActivity } from "@/core/tasks/domain/upload-activity";
 import { User } from "@/core/users/domain/get-all-users";
@@ -54,6 +56,7 @@ interface TasksState {
   getComponents: () => Promise<any>;
   uploadActivity: (data: any) => Promise<any>;
   updateEvidence: (data: any) => Promise<any>;
+  updateEvidenceResponsables: (data: IUpdateEvidenceResponsablesReq) => Promise<any>;
   getUsersByComponent: (componentId: string) => Promise<any>;
   setLastComponentId: (componentId: string) => void;
   clearLastComponentId: () => void;
@@ -216,6 +219,68 @@ export const useTasksStore = create<TasksState>((set, get) => ({
           err?.response?.data?.message ||
           err?.message ||
           "Error al actualizar evidencia",
+      }));
+      throw err;
+    }
+  },
+
+  updateEvidenceResponsables: async (data: IUpdateEvidenceResponsablesReq) => {
+    const id = data.id;
+
+    set((state) => ({
+      error: null,
+      updatingEvidenceIds: [...(state.updatingEvidenceIds || []), id],
+    }));
+
+    try {
+      const updateEvidenceResponsables =
+        updateEvidenceResponsablesUseCase(tasksRepository);
+      const result = await updateEvidenceResponsables(data);
+
+      const raw = (result as any)?.data ?? result;
+      const candidates: any[] = [];
+
+      if (Array.isArray(raw)) candidates.push(...raw);
+      else if (Array.isArray(raw?.data)) candidates.push(...raw.data);
+      else if (Array.isArray(raw?.items)) candidates.push(...raw.items);
+      else if (raw?.data?.items && Array.isArray(raw.data.items))
+        candidates.push(...raw.data.items);
+      else if (raw?._id) candidates.push(raw);
+      else if (raw?.data?._id) candidates.push(raw.data);
+
+      if (candidates.length > 0) {
+        candidates.forEach((ev) => {
+          if (ev && ev._id) get().patchEvidenceInStore?.(ev as IEvidence);
+        });
+      } else {
+        get().patchEvidenceInStore?.({
+          _id: id,
+          responsables: data.responsables.map((responsableId) => ({
+            _id: responsableId,
+            nombre: "",
+            email: "",
+            vinculacion: "",
+            createdAt: "",
+          })),
+        } as IEvidence);
+      }
+
+      set((state) => ({
+        updatingEvidenceIds: (state.updatingEvidenceIds || []).filter(
+          (x) => x !== id
+        ),
+      }));
+
+      return result;
+    } catch (err: any) {
+      set((state) => ({
+        updatingEvidenceIds: (state.updatingEvidenceIds || []).filter(
+          (x) => x !== id
+        ),
+        error:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Error al actualizar responsables de la evidencia",
       }));
       throw err;
     }

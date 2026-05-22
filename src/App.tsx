@@ -11,6 +11,7 @@ import UploadForm from "./pages/evidences/upload";
 import ProfilePage from "./pages/profiles";
 import { UsersByComponent } from "./pages/usersByComponent";
 import { PowerBIReport } from "./pages/PowerBI";
+import TrazabilidadPage from "./pages/admins";
 
 function App() {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ function App() {
     initialize().catch(() => {
       navigate('/login', { replace: true });
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   // Redirigir a login si hay error de verificación
@@ -100,6 +101,15 @@ function App() {
             </ProtectedRoute>
           }
           path="/evidences/upload"
+        />
+
+        <Route
+          element={
+            <ProtectedRoute>
+              <TrazabilidadPage />
+            </ProtectedRoute>
+          }
+          path="/admins"
         />
 
         <Route

@@ -9,7 +9,7 @@ import {
   Chip,
   Button,
 } from "@heroui/react";
-import { CalendarDays, Target, Users, FileText } from "lucide-react";
+import { CalendarDays, Target, Users, FileText, X } from "lucide-react";
 import type { IEvidence } from "../../../core/tasks/domain/upload-evidence/upload-evidence.res";
 import { ESTADOS } from "@/pages/evidences/upload/options/estados";
 import { ProfileAvatar } from "@/shared/components/ProfileAvatar";
@@ -31,21 +31,38 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
     estado,
     entregadoEn,
     justificacion,
+    responsables,
     modalOpen,
+    responsablesModalOpen,
+    confirmResponsablesModalOpen,
+    confirmAction,
     pendingEstado,
     selectedDate,
     selectedJustificacion,
     loading,
+    availableResponsables,
+    selectedResponsables,
+    isLoadingResponsables,
     isNoLogro,
     maxDate,
     modalTitle,
+    confirmModalTitle,
+    confirmModalText,
     isEntregaExtemporaneaPorFecha,
     setModalOpen,
     setPendingEstado,
     setSelectedDate,
     setSelectedJustificacion,
+    setResponsablesModalOpen,
+    setConfirmResponsablesModalOpen,
     handleChangeEstado,
     handleModalConfirm,
+    openResponsablesModal,
+    handleAddResponsable,
+    handleRemoveResponsable,
+    askConfirmCancelResponsables,
+    askConfirmSaveResponsables,
+    handleConfirmResponsablesAction,
   } = useEvidenceCard(evidence);
 
   const mostrarEntregadoEn =
@@ -132,12 +149,12 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-default-400" />
             <span className="text-sm font-medium">
-              Responsables ({evidence.responsables.length})
+              Responsables ({responsables.length})
             </span>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {evidence.responsables.map((responsable) => (
+            {responsables.map((responsable) => (
               <div
                 key={responsable._id}
                 className="flex items-center gap-2 bg-default-100 rounded-lg px-3 py-2"
@@ -188,24 +205,34 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             )}
           </div>
 
-          <Dropdown >
-            <DropdownTrigger>
-              <Button variant="bordered" isLoading={loading} disabled={loading}>
-                Cambiar estado
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label="Cambiar estado">
-              {ESTADOS.map((estadoOpt) => (
-                <DropdownItem
-                  key={estadoOpt.value}
-                  onClick={() => handleChangeEstado(estadoOpt.value)}
-                  isDisabled={loading || estadoOpt.value === estado}
-                >
-                  {estadoOpt.label}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </Dropdown>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="bordered"
+              onClick={openResponsablesModal}
+              isLoading={isLoadingResponsables}
+              disabled={loading || isLoadingResponsables}
+            >
+              Cambiar responsables
+            </Button>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button variant="bordered" isLoading={loading} disabled={loading}>
+                  Cambiar estado
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu aria-label="Cambiar estado">
+                {ESTADOS.map((estadoOpt) => (
+                  <DropdownItem
+                    key={estadoOpt.value}
+                    onClick={() => handleChangeEstado(estadoOpt.value)}
+                    isDisabled={loading || estadoOpt.value === estado}
+                  >
+                    {estadoOpt.label}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+          </div>
         </div>
         {error && <div className="text-xs text-red-500 mt-2">{error}</div>}
 
@@ -311,6 +338,135 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
               </span>
             )}
           </div>
+        </Modal>
+
+        <Modal
+          open={responsablesModalOpen}
+          title="Cambiar responsables"
+          onClose={() => setResponsablesModalOpen(false)}
+          footer={
+            <div className="flex gap-2 justify-end">
+              <Button variant="light" onClick={askConfirmCancelResponsables}>
+                Cancelar
+              </Button>
+              <Button
+                variant="solid"
+                color="success"
+                onClick={askConfirmSaveResponsables}
+                disabled={loading}
+              >
+                Aceptar y guardar
+              </Button>
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-4">
+            <div>
+              <p className="text-sm font-semibold mb-2">Asignados actualmente</p>
+              {selectedResponsables.length === 0 ? (
+                <p className="text-xs text-default-500">No hay responsables seleccionados.</p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {selectedResponsables.map((responsable) => (
+                    <div
+                      key={responsable._id}
+                      className="flex items-center justify-between gap-3 rounded-lg border border-divider px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <ProfileAvatar
+                          name={responsable.nombre}
+                          size="sm"
+                          imgClassName="w-8 h-8 rounded-full object-cover"
+                          avatarClassName="w-8 h-8 text-xs"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{responsable.nombre}</p>
+                          <p className="text-xs text-default-500 truncate">
+                            {responsable.vinculacion}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        isIconOnly
+                        variant="light"
+                        color="danger"
+                        size="sm"
+                        onClick={() => handleRemoveResponsable(responsable._id)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold mb-2">Agregar responsables</p>
+              {isLoadingResponsables ? (
+                <p className="text-xs text-default-500">Cargando usuarios...</p>
+              ) : (
+                <div className="max-h-44 overflow-auto rounded-lg border border-divider p-2 flex flex-col gap-2">
+                  {availableResponsables
+                    .filter(
+                      (user) =>
+                        !selectedResponsables.some(
+                          (selected) => selected._id === user._id
+                        )
+                    )
+                    .map((user) => (
+                      <button
+                        key={user._id}
+                        type="button"
+                        className="w-full text-left rounded-md px-3 py-2 bg-default-100 hover:bg-default-200 transition-colors"
+                        onClick={() => handleAddResponsable(user)}
+                      >
+                        <p className="text-sm font-medium">{user.nombre}</p>
+                        <p className="text-xs text-default-500">{user.vinculacion}</p>
+                      </button>
+                    ))}
+
+                  {availableResponsables.filter(
+                    (user) =>
+                      !selectedResponsables.some(
+                        (selected) => selected._id === user._id
+                      )
+                  ).length === 0 && (
+                    <p className="text-xs text-default-500 px-1 py-2">
+                      No hay más usuarios disponibles para agregar.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
+
+        <Modal
+          open={confirmResponsablesModalOpen}
+          title={confirmModalTitle}
+          onClose={() => setConfirmResponsablesModalOpen(false)}
+          size="sm"
+          footer={
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="light"
+                onClick={() => setConfirmResponsablesModalOpen(false)}
+              >
+                No
+              </Button>
+              <Button
+                variant="solid"
+                color={confirmAction === "cancel" ? "warning" : "success"}
+                onClick={handleConfirmResponsablesAction}
+                isLoading={confirmAction === "save" && loading}
+              >
+                Sí, confirmar
+              </Button>
+            </div>
+          }
+        >
+          <p className="text-sm text-default-600">{confirmModalText}</p>
         </Modal>
       </CardBody>
     </Card>
