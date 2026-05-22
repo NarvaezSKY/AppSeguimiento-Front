@@ -205,18 +205,16 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="bordered"
-              onClick={openResponsablesModal}
-              isLoading={isLoadingResponsables}
-              disabled={loading || isLoadingResponsables}
-            >
-              Cambiar responsables
-            </Button>
+          <div className="flex flex-col items-center gap-2">
             <Dropdown>
               <DropdownTrigger>
-                <Button variant="bordered" isLoading={loading} disabled={loading}>
+                <Button
+                  className="w-full"
+                  size="sm"
+                  variant="bordered"
+                  isLoading={loading}
+                  disabled={loading}
+                >
                   Cambiar estado
                 </Button>
               </DropdownTrigger>
@@ -232,6 +230,15 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
                 ))}
               </DropdownMenu>
             </Dropdown>
+            <Button
+              variant="bordered"
+              size="sm"
+              onClick={openResponsablesModal}
+              isLoading={isLoadingResponsables}
+              disabled={loading || isLoadingResponsables}
+            >
+              Cambiar responsables
+            </Button>
           </div>
         </div>
         {error && <div className="text-xs text-red-500 mt-2">{error}</div>}
@@ -296,7 +303,9 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             ) : (
               <>
                 <label className="text-sm font-medium">
-                  <span className="text-default-500 mr-2">Fecha de entrega</span>
+                  <span className="text-default-500 mr-2">
+                    Fecha de entrega
+                  </span>
                   <input
                     type="date"
                     className="mt-2 border rounded px-3 py-2"
@@ -330,7 +339,8 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
               </span>
             ) : isEntregaExtemporaneaPorFecha() ? (
               <span className="text-xs text-default-500">
-                Debes ingresar la justificación para registrar Entrega extemporanea.
+                Debes ingresar la justificación para registrar Entrega
+                extemporanea.
               </span>
             ) : (
               <span className="text-xs text-default-500">
@@ -362,9 +372,13 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
         >
           <div className="flex flex-col gap-4">
             <div>
-              <p className="text-sm font-semibold mb-2">Asignados actualmente</p>
+              <p className="text-sm font-semibold mb-2">
+                Asignados actualmente
+              </p>
               {selectedResponsables.length === 0 ? (
-                <p className="text-xs text-default-500">No hay responsables seleccionados.</p>
+                <p className="text-xs text-default-500">
+                  No hay responsables seleccionados.
+                </p>
               ) : (
                 <div className="flex flex-col gap-2">
                   {selectedResponsables.map((responsable) => (
@@ -380,7 +394,9 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
                           avatarClassName="w-8 h-8 text-xs"
                         />
                         <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{responsable.nombre}</p>
+                          <p className="text-sm font-medium truncate">
+                            {responsable.nombre}
+                          </p>
                           <p className="text-xs text-default-500 truncate">
                             {responsable.vinculacion}
                           </p>
@@ -411,8 +427,8 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
                     .filter(
                       (user) =>
                         !selectedResponsables.some(
-                          (selected) => selected._id === user._id
-                        )
+                          (selected) => selected._id === user._id,
+                        ),
                     )
                     .map((user) => (
                       <button
@@ -422,15 +438,17 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
                         onClick={() => handleAddResponsable(user)}
                       >
                         <p className="text-sm font-medium">{user.nombre}</p>
-                        <p className="text-xs text-default-500">{user.vinculacion}</p>
+                        <p className="text-xs text-default-500">
+                          {user.vinculacion}
+                        </p>
                       </button>
                     ))}
 
                   {availableResponsables.filter(
                     (user) =>
                       !selectedResponsables.some(
-                        (selected) => selected._id === user._id
-                      )
+                        (selected) => selected._id === user._id,
+                      ),
                   ).length === 0 && (
                     <p className="text-xs text-default-500 px-1 py-2">
                       No hay más usuarios disponibles para agregar.
@@ -472,4 +490,3 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
     </Card>
   );
 }
-
