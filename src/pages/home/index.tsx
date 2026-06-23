@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import DefaultLayout from "@/layouts/default";
 import useHome from "./hooks/useHome";
 import {
@@ -21,6 +21,12 @@ import { useTasksStore } from "@/store/tasks.store";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { EvidenceCard } from "@/shared/components/EvidenceCard/EvidenceCard";
+import type { IEvidence } from "@/core/tasks/domain/upload-evidence/upload-evidence.res";
+import logoSrc from "@/assets/logo-coord-mis-reg.png";
+import logoSenaSrc from "@/assets/logo-sena.png";
+import { useAuthStore } from "@/store/auth.store";
+
+const UPCOMING_PAGE_SIZE = 10;
 
 export default function IndexPage() {
   const {
@@ -37,7 +43,259 @@ export default function IndexPage() {
   const deleteComponent = useTasksStore((s) => (s as any).deleteComponent);
   const { setLastComponentId } = useTasksStore();
   const [openCreate, setOpenCreate] = useState(false);
+  const [upcomingPage, setUpcomingPage] = useState(1);
   const navigate = useNavigate();
+
+  const totalUpcomingPages = Math.max(
+    1,
+    Math.ceil(upcomingEvidences.length / UPCOMING_PAGE_SIZE),
+  );
+  const paginatedUpcoming = upcomingEvidences.slice(
+    (upcomingPage - 1) * UPCOMING_PAGE_SIZE,
+    upcomingPage * UPCOMING_PAGE_SIZE,
+  );
+
+  useEffect(() => {
+    setUpcomingPage(1);
+  }, [upcomingEvidences.length]);
+
+  const buildEmailBody = useCallback(() => {
+    const grouped: Record<string, IEvidence[]> = {};
+    for (const ev of upcomingEvidences) {
+      const names = ev.responsables.map((r) => r.nombre);
+      if (names.length === 0) {
+        (grouped["Sin responsable"] ??= []).push(ev);
+      } else {
+        for (const name of names) {
+          (grouped[name] ??= []).push(ev);
+        }
+      }
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const formatDate = (dateStr: string) => {
+      const d = new Date(dateStr);
+      return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+    };
+
+    const monthNames = [
+      "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+      "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre",
+    ];
+
+    const lines: string[] = [];
+    for (const [nombre, evidences] of Object.entries(grouped)) {
+      lines.push(`Compromisos pendientes para ${nombre}:`);
+      for (const ev of evidences) {
+        const dueDate = new Date(ev.fechaEntrega);
+        dueDate.setHours(0, 0, 0, 0);
+        const daysUntilDue = Math.ceil(
+          (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        const mesLabel = `${monthNames[ev.mes - 1] ?? ev.mes}`;
+        lines.push(
+          `${ev.actividad.componente.nombreComponente} - ${ev.actividad.actividad} - ${ev.tipoEvidencia} - ${mesLabel} - Vence el ${formatDate(ev.fechaEntrega)} (en ${daysUntilDue} día(s))`,
+        );
+      }
+      lines.push("");
+    }
+    return lines.join("\n");
+  }, [upcomingEvidences]);
+
+  const handleCopyInfo = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(buildEmailBody());
+      toast.success("Información copiada al portapapeles");
+    } catch {
+      toast.error("No se pudo copiar la información");
+    }
+  }, [buildEmailBody]);
+
+  const getLogoBase64 = useCallback(async (url: string): Promise<string> => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return "";
+    }
+  }, []);
+
+  const buildEmailHTML = useCallback(
+    (coordLogo: string, senaLogo: string) => {
+      const grouped: Record<string, IEvidence[]> = {};
+      for (const ev of upcomingEvidences) {
+        const names = ev.responsables.map((r) => r.nombre);
+        if (names.length === 0) {
+          (grouped["Sin responsable"] ??= []).push(ev);
+        } else {
+          for (const name of names) {
+            (grouped[name] ??= []).push(ev);
+          }
+        }
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const formatDate = (dateStr: string) => {
+        const d = new Date(dateStr);
+        return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+      };
+
+      const monthNames = [
+        "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+        "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre",
+      ];
+
+      const currentMonth = monthNames[new Date().getMonth()];
+
+      let rowsHTML = "";
+      for (const [nombre, evidences] of Object.entries(grouped)) {
+        rowsHTML += `<tr><td colspan="5" style="padding:14px 0 6px;font-weight:700;color:#7c3aed;font-size:14px;border-bottom:1px solid #e5e7eb;">Compromisos para ${nombre}</td></tr>`;
+        for (const ev of evidences) {
+          const dueDate = new Date(ev.fechaEntrega);
+          dueDate.setHours(0, 0, 0, 0);
+          const daysUntilDue = Math.ceil(
+            (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+          );
+          const mesLabel = monthNames[ev.mes - 1] ?? ev.mes;
+          rowsHTML += `<tr style="background-color:#ffffff;">
+            <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;color:#374151;">${ev.actividad.componente.nombreComponente}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;color:#374151;">${ev.actividad.actividad}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;color:#374151;">${ev.tipoEvidencia} - ${mesLabel}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;white-space:nowrap;font-weight:700;color:#111827;">${formatDate(ev.fechaEntrega)}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;white-space:nowrap;font-weight:700;color:${daysUntilDue <= 3 ? "#dc2626" : "#d97706"};">${daysUntilDue} día(s)</td>
+          </tr>`;
+        }
+      }
+
+      const headerCellStyle = "padding:12px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;background-color:#f9fafb;border-bottom:2px solid #e5e7eb;letter-spacing:0.5px;";
+
+      const senaImg = senaLogo
+        ? `<img src="${senaLogo}" alt="SENA" style="height:60px;width:auto;" />`
+        : "";
+      const coordImg = coordLogo
+        ? `<img src="${coordLogo}" alt="CMR" style="height:60px;width:auto;" />`
+        : "";
+
+      return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:30px 12px;background-color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;">
+  <table role="presentation" style="width:100%;max-width:700px;margin:0 auto;background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+    <tr>
+      <td style="padding:24px 32px;background:linear-gradient(135deg,#7c3aed,#9333ea);">
+        <table role="presentation" style="width:100%;">
+          <tr>
+            <td style="vertical-align:middle;">${coordImg}</td>
+            <td style="vertical-align:middle;text-align:center;">
+              <div style="font-size:18px;font-weight:700;color:#ffffff;letter-spacing:0.3px;">Plan Operativo CMR</div>
+              <div style="font-size:13px;color:#c4b5fd;margin-top:2px;">Seguimiento ${currentMonth}</div>
+            </td>
+            <td style="vertical-align:middle;text-align:right;">${senaImg}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:32px 32px 24px;">
+        <p style="margin:0 0 6px;font-size:18px;font-weight:700;color:#111827;">Recordatorio de compromisos</p>
+        <p style="margin:0 0 4px;font-size:14px;color:#4b5563;line-height:1.6;">
+          Cordial saludo.
+        </p>
+        <p style="margin:0 0 20px;font-size:14px;color:#4b5563;line-height:1.6;">
+          A continuaci&oacute;n se relacionan los compromisos pendientes por entregar correspondientes al per&iacute;odo de ${currentMonth}. Agradecemos realizar la entrega de las evidencias en las fechas establecidas para dar cumplimiento al Plan Operativo CMR.
+        </p>
+        <table role="presentation" style="width:100%;border-collapse:collapse;border-radius:6px;overflow:hidden;border:1px solid #e5e7eb;">
+          <thead>
+            <tr>
+              <th style="${headerCellStyle}">Componente</th>
+              <th style="${headerCellStyle}">Actividad</th>
+              <th style="${headerCellStyle}">Tipo - Mes</th>
+              <th style="${headerCellStyle}">Vence</th>
+              <th style="${headerCellStyle}">D&iacute;as</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHTML}
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:20px 32px;background-color:#ffffff;border-top:1px solid #e5e7eb;">
+        <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center;line-height:1.5;">
+          &copy; ${new Date().getFullYear()} Seguimiento CMR &mdash; Coordinaci&oacute;n de Misional y Regional<br>
+          <span style="color:#c4b5fd;">Sistema de Seguimiento &mdash; Plan Operativo CMR</span>
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+    },
+    [upcomingEvidences],
+  );
+
+  const handleSendEmail = useCallback(async () => {
+    const authUser = useAuthStore.getState().user;
+    const loggedInEmail = authUser?.email ?? authUser?.admin?.email ?? "";
+
+    const allEmails = [
+      ...new Set(
+        upcomingEvidences.flatMap((ev) =>
+          ev.responsables.map((r) => r.email),
+        ),
+      ),
+    ];
+    const emails = loggedInEmail
+      ? allEmails.filter((e) => e !== loggedInEmail)
+      : allEmails;
+    const to = emails.join(";");
+
+    const monthNames = [
+      "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+      "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre",
+    ];
+    const currentMonth = monthNames[new Date().getMonth()];
+    const subject = encodeURIComponent(
+      `Recordatorio de entrega de compromisos ${currentMonth} - Seguimiento al Plan Operativo CMR`,
+    );
+
+    try {
+      const [coordB64, senaB64] = await Promise.all([
+        getLogoBase64(logoSrc),
+        getLogoBase64(logoSenaSrc),
+      ]);
+      const htmlContent = buildEmailHTML(coordB64, senaB64);
+      const plainContent = buildEmailBody();
+
+      const htmlBlob = new Blob([htmlContent], { type: "text/html" });
+      const plainBlob = new Blob([plainContent], { type: "text/plain" });
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/html": htmlBlob,
+          "text/plain": plainBlob,
+        }),
+      ]);
+
+      toast.success("HTML copiado al portapapeles. Pega (Ctrl+V) en el correo para ver el diseño.");
+    } catch {
+      toast.error("No se pudo copiar el HTML.");
+    }
+
+    const greeting = encodeURIComponent(
+      `Cordial saludo.\n\nA continuación encontrará el detalle de los compromisos próximos a vencer correspondientes al período de ${currentMonth}.\n\n*Pegue (Ctrl+V) el contenido copiado al portapapeles para ver el diseño completo con logos, tabla y colores.*`,
+    );
+    window.location.href = `mailto:${to}?subject=${subject}&body=${greeting}`;
+  }, [upcomingEvidences, buildEmailBody, buildEmailHTML, getLogoBase64]);
 
   const handleEdit = (component: any) => {
     navigate(`/components/${component._id}/edit`);
@@ -101,15 +359,34 @@ export default function IndexPage() {
                   Evidencias en estado 'Por entregar' acumuladas de {dueMonthLabel}
                 </p>
               </div>
-              <Button
-                size="sm"
-                variant="flat"
-                color="warning"
-                onClick={refreshEvidencesDashboard}
-                isLoading={isDashboardLoading}
-              >
-                Actualizar
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="flat"
+                  onPress={handleCopyInfo}
+                  isDisabled={upcomingEvidences.length === 0}
+                >
+                  Copiar información
+                </Button>
+                <Button
+                  size="sm"
+                  variant="flat"
+                  color="primary"
+                  onPress={handleSendEmail}
+                  isDisabled={upcomingEvidences.length === 0}
+                >
+                  Enviar por correo
+                </Button>
+                <Button
+                  size="sm"
+                  variant="flat"
+                  color="warning"
+                  onClick={refreshEvidencesDashboard}
+                  isLoading={isDashboardLoading}
+                >
+                  Actualizar
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -147,10 +424,51 @@ export default function IndexPage() {
               )}
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                {upcomingEvidences.map((evidence) => (
+                {paginatedUpcoming.map((evidence) => (
                   <EvidenceCard key={evidence._id} evidence={evidence} />
                 ))}
               </div>
+
+              {totalUpcomingPages > 1 && (
+                <div className="flex items-center justify-between gap-4 mt-2">
+                  <div className="text-sm text-default-500">
+                    Mostrando {(upcomingPage - 1) * UPCOMING_PAGE_SIZE + 1} -{" "}
+                    {Math.min(
+                      upcomingPage * UPCOMING_PAGE_SIZE,
+                      upcomingEvidences.length,
+                    )}{" "}
+                    de {upcomingEvidences.length}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="bordered"
+                      onPress={() =>
+                        setUpcomingPage((p) => Math.max(1, p - 1))
+                      }
+                      isDisabled={upcomingPage <= 1}
+                    >
+                      Anterior
+                    </Button>
+                    <div className="px-3 text-sm">
+                      Página {upcomingPage} de {totalUpcomingPages}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="bordered"
+                      color="success"
+                      onPress={() =>
+                        setUpcomingPage((p) =>
+                          Math.min(totalUpcomingPages, p + 1),
+                        )
+                      }
+                      isDisabled={upcomingPage >= totalUpcomingPages}
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
             <Divider/>
 

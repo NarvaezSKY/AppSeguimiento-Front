@@ -50,7 +50,7 @@ export default function useHome(): UseHomeResult {
     const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
 
     const monthsRange = Array.from(
-      { length: prevMonth },
+      { length: currentMonth },
       (_, index) => index + 1,
     );
 
@@ -104,7 +104,8 @@ export default function useHome(): UseHomeResult {
       const merged = results.flatMap((result) => extractEvidenceItems(result));
       const uniqueById = merged.filter(
         (evidence, index, self) =>
-          self.findIndex((candidate) => candidate._id === evidence._id) === index,
+          self.findIndex((candidate) => candidate._id === evidence._id) ===
+          index,
       );
 
       setDashboardEvidences(uniqueById);
@@ -160,7 +161,6 @@ export default function useHome(): UseHomeResult {
       return dueDate < startOfToday;
     });
   }, [sortedEvidences, startOfToday]);
-
 
   return {
     components,
