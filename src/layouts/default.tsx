@@ -6,6 +6,7 @@ import { Button } from "@heroui/button";
 import { HiMenu } from "react-icons/hi";
 import { useState } from "react";
 import { useAuthStore } from "@/store/auth.store";
+import LogoCoordMisReg from "@/assets/logo-coord-mis-reg.png";
 
 export default function DefaultLayout({
   children,
@@ -43,16 +44,23 @@ export default function DefaultLayout({
           <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>
-      <footer className="w-full flex items-center justify-center py-6 border-t mt-10">
+      <footer className="w-full flex flex-col items-center justify-center py-6 px-4 border-t mt-10">
         <Link
           isExternal={false}
-          className="flex items-center gap-2"
+          className="flex flex-col items-center gap-3"
           href="/"
-          title="Seguimiento Plan Oprativo CMR"
+          title="Seguimiento Plan Operativo CMR"
         >
-          <span className="text-default-600">Seguimiento Plan Oprativo - CMR</span>
-          <p className="text-success font-bold">SENA</p>
-          <span className="text-default-600">Regional Cauca - 2026</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-2 text-xs sm:text-sm">
+            <span className="text-default-600">Seguimiento Plan Operativo - CMR</span>
+            <p className="text-success font-bold">SENA</p>
+            <span className="text-default-600">Regional Cauca - 2026</span>
+          </div>
+          <img
+            src={LogoCoordMisReg}
+            alt="Coordinación Misional y Regional"
+            className="h-14 sm:h-16 md:h-20 w-auto object-contain"
+          />
         </Link>
       </footer>
     </div>
