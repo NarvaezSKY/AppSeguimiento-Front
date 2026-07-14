@@ -95,9 +95,11 @@ const updateEvidenceResponsables = async (data: IUpdateEvidenceResponsablesReq) 
     }
 }
 
-const getUsersByComponent = async (componentId: string) => {
+const getUsersByComponent = async (componentId: string, anio?: number) => {
     try {
-        const response = await axiosInstance.get(`/componentes/${componentId}/responsables`);
+        const params: any = {};
+        if (anio != null) params.anio = anio;
+        const response = await axiosInstance.get(`/componentes/${componentId}/responsables`, { params });
         return response.data;
     } catch (error) {
         console.error("Error during register:", error);

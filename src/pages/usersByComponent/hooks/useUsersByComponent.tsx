@@ -12,7 +12,7 @@ export const useUsersByComponent = (componentId: string) => {
   const { users, getAllUsers } = useUsersStore();
 
   const refresh = useCallback(async () => {
-    await getUsersByComponent(componentId);
+    await getUsersByComponent(componentId, 2026);
   }, [getUsersByComponent, componentId]);
 
   useEffect(() => {

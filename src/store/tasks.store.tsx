@@ -57,7 +57,7 @@ interface TasksState {
   uploadActivity: (data: any) => Promise<any>;
   updateEvidence: (data: any) => Promise<any>;
   updateEvidenceResponsables: (data: IUpdateEvidenceResponsablesReq) => Promise<any>;
-  getUsersByComponent: (componentId: string) => Promise<any>;
+  getUsersByComponent: (componentId: string, anio?: number) => Promise<any>;
   setLastComponentId: (componentId: string) => void;
   clearLastComponentId: () => void;
   getActividadesByResponsable: (data: IGetActividadesByResponsableReq) => Promise<any>;
@@ -149,11 +149,11 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     set({ lastComponentId: componentId }),
   clearLastComponentId: () => set({ lastComponentId: null }),
 
-  getUsersByComponent: async (componentId: string) => {
+  getUsersByComponent: async (componentId: string, anio?: number) => {
     set({ isLoading: true, error: null });
     try {
       const getUsersByComponent = getUsersByComponentUseCase(tasksRepository);
-      const result = await getUsersByComponent(componentId);
+      const result = await getUsersByComponent(componentId, anio);
       set({ isLoading: false, error: null, usersInComponent: result.data });
       return result;
     } catch (err: any) {

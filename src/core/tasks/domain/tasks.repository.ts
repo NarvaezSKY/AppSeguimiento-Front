@@ -16,7 +16,7 @@ export interface ITasksRepository {
     uploadActivity: (data: IUploadActivityReq) => Promise<IUploadActivityRes>;
     getUniqueComponents: () => Promise<IGetComponentsRes>;
     updateEvidence: (data: IUpdateEvidenceReq) => Promise<IUploadEvidenceRes>;
-    getUsersByComponent: (componentId: string) => Promise<IGetAllUsersRes>;
+    getUsersByComponent: (componentId: string, anio?: number) => Promise<IGetAllUsersRes>;
     getActividadesByResponsable: (data: IGetActividadesByResponsableReq) => Promise<IGetActividadesByResponsableRes>;
     getComponentsByResponsable: (userId: string) => Promise<IGetComponentsRes>;
     updateEvidenceResponsables: (data: IUpdateEvidenceResponsablesReq) => Promise<IUploadEvidenceRes>;
